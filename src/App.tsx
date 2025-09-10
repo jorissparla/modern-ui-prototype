@@ -162,24 +162,14 @@ function App() {
             </Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Team Members Sidebar */}
-            <div className="lg:col-span-1">
-              <TeamMemberList 
-                members={teamMembers} 
-                onDeleteMember={(id) => setTeamMembers(current => current.filter(m => m.id !== id))}
-              />
-            </div>
-            
+          <div className="w-full">
             {/* Capacity Grid */}
-            <div className="lg:col-span-3">
-              <CapacityGrid
-                members={teamMembers}
-                currentDate={currentDate}
-                getAssignment={getAssignment}
-                updateAssignment={updateAssignment}
-              />
-            </div>
+            <CapacityGrid
+              members={teamMembers}
+              currentDate={currentDate}
+              getAssignment={getAssignment}
+              updateAssignment={updateAssignment}
+            />
           </div>
         )}
 
