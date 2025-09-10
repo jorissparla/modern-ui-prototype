@@ -58,12 +58,13 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <div className="min-w-max">
-          {/* Header Row */}
-          <div className="flex gap-1 mb-2">
-            <div className="w-48 font-medium text-sm text-muted-foreground flex items-center">Team Member</div>
-            <div className="w-32 font-medium text-sm text-muted-foreground flex items-center gap-1">
+      <div className="flex border border-border rounded-lg overflow-hidden">
+        {/* Fixed Left Columns */}
+        <div className="flex-shrink-0 bg-background">
+          {/* Fixed Header */}
+          <div className="flex gap-1 mb-2 bg-background border-b border-border pb-2">
+            <div className="w-48 font-medium text-sm text-muted-foreground flex items-center px-2">Team Member</div>
+            <div className="w-32 font-medium text-sm text-muted-foreground flex items-center gap-1 px-2">
               Load
               <Button 
                 variant="ghost" 
@@ -74,28 +75,17 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
                 {sortDirection === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
               </Button>
             </div>
-            {days.map((day) => (
-              <div 
-                key={day.day} 
-                className={`w-10 text-xs text-center p-1 rounded flex-shrink-0 ${
-                  day.isWeekend ? 'bg-muted text-muted-foreground' : 'text-foreground'
-                }`}
-              >
-                <div className="font-medium">{day.day}</div>
-                <div className="text-[10px] opacity-75">{day.dayName}</div>
-              </div>
-            ))}
           </div>
 
-          {/* Member Rows */}
+          {/* Fixed Member Rows */}
           {members.map((member) => (
             <div key={member.id} className="flex gap-1 mb-0.5">
-              <div className="w-48 p-1.5 bg-card border rounded flex flex-col justify-center flex-shrink-0">
+              <div className="w-48 p-1.5 bg-card border-y border-l rounded-l flex flex-col justify-center">
                 <div className="font-medium text-sm truncate">{member.name}</div>
                 <div className="text-xs text-muted-foreground truncate">{member.role}</div>
               </div>
               
-              <div className="w-32 p-1.5 bg-card border rounded flex items-center justify-center flex-shrink-0">
+              <div className="w-32 p-1.5 bg-card border-y border-r rounded-r flex items-center justify-center">
                 <div className="flex items-center gap-2 text-[10px]">
                   <div className="flex items-center gap-0.5">
                     <span className="text-muted-foreground font-medium">B</span>
@@ -111,20 +101,45 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
                   </div>
                 </div>
               </div>
-              
-              {days.map((day) => {
-                const assignments = getAssignments(member.id, day.dateString)
-                return (
-                  <StatusCell
-                    key={`${member.id}-${day.day}`}
-                    assignments={assignments}
-                    isWeekend={day.isWeekend}
-                    onUpdate={(status, timeSlot) => updateAssignment(member.id, day.dateString, status, timeSlot)}
-                  />
-                )
-              })}
             </div>
           ))}
+        </div>
+
+        {/* Scrollable Right Section */}
+        <div className="flex-1 overflow-x-auto border-l border-border">
+          <div className="min-w-max">
+            {/* Scrollable Header */}
+            <div className="flex gap-1 mb-2 bg-background border-b border-border pb-2">
+              {days.map((day) => (
+                <div 
+                  key={day.day} 
+                  className={`w-10 text-xs text-center p-1 rounded flex-shrink-0 ${
+                    day.isWeekend ? 'bg-muted text-muted-foreground' : 'text-foreground'
+                  }`}
+                >
+                  <div className="font-medium">{day.day}</div>
+                  <div className="text-[10px] opacity-75">{day.dayName}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Scrollable Member Rows */}
+            {members.map((member) => (
+              <div key={member.id} className="flex gap-1 mb-0.5">
+                {days.map((day) => {
+                  const assignments = getAssignments(member.id, day.dateString)
+                  return (
+                    <StatusCell
+                      key={`${member.id}-${day.day}`}
+                      assignments={assignments}
+                      isWeekend={day.isWeekend}
+                      onUpdate={(status, timeSlot) => updateAssignment(member.id, day.dateString, status, timeSlot)}
+                    />
+                  )
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </Card>
