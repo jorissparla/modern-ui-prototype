@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Card, CardContent, CardDescription, Ca
-import { Users, Settings } from '@phosphor-icon
-interface TeamManagementDialogProps {
-  onOpenChange: (open: boolea
-  onUpdateTeamStatus: (teamId: string, isActive: boolea
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Switch } from '@/components/ui/switch'
+import { Button } from '@/components/ui/button'
+import { Users, Settings } from '@phosphor-icons/react'
+import { Team } from '../App'
 
 interface TeamManagementDialogProps {
   open: boolean
@@ -14,22 +14,22 @@ interface TeamManagementDialogProps {
 }
 
 export function TeamManagementDialog({ 
-        
-        </Dialog
-        <
-            <div clas
-              <span className="
-            <span className="text-sm text-muted-foreground">
+  open, 
+  onOpenChange, 
+  teams, 
+  onUpdateTeamStatus 
+}: TeamManagementDialogProps) {
+  const activeTeamsCount = teams.filter(team => team.isActive).length
 
-
-            {teams.map(team => (
-                <CardHeader className="pb-3
-                    <d
-                      <CardDescription className="text-sm">
-                      </CardDescri
-                    <Switch
-                      on
-                  </div>
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Settings size={20} />
+            Team Management
+          </DialogTitle>
+          <DialogDescription>
             Configure which teams are available for selection in the capacity planner.
           </DialogDescription>
         </DialogHeader>
@@ -62,19 +62,19 @@ export function TeamManagementDialog({
                     />
                   </div>
                 </CardHeader>
-
+              </Card>
             ))}
-
+          </div>
 
           {activeTeamsCount === 0 && (
             <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
               <p className="text-sm text-destructive font-medium mb-1">
                 No teams enabled
-
-              <p className="text-sm text-destructive/80">
-
               </p>
-
+              <p className="text-sm text-destructive/80">
+                Enable at least one team to start using the capacity planner.
+              </p>
+            </div>
           )}
 
           <div className="flex justify-end gap-2 pt-4 border-t">
@@ -82,7 +82,8 @@ export function TeamManagementDialog({
               Close
             </Button>
           </div>
-
+        </div>
       </DialogContent>
-
+    </Dialog>
   )
+}
