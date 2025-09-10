@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Toaster } from '@/components/ui/sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown, Settings } from '@phosphor-icons/react'
 import { AddMemberDialog } from './components/AddMemberDialog'
 import { CapacityGrid } from './components/CapacityGrid'
 import { TeamMemberList } from './components/TeamMemberList'
+import { TeamManagementDialog } from './components/TeamManagementDialog'
 
 export interface TeamMember {
   id: string
@@ -27,6 +28,7 @@ export interface Team {
   id: string
   name: string
   description: string
+  isActive: boolean
 }
 
 export interface Assignment {
@@ -43,6 +45,7 @@ function App() {
   const [assignments, setAssignments] = useKV<Assignment[]>('assignments', [])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
+  const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
 
@@ -50,13 +53,13 @@ function App() {
   useEffect(() => {
     if (!teams || teams.length === 0) {
       const defaultTeams: Team[] = [
-        { id: 'frontend', name: 'Frontend Team', description: 'User interface development' },
-        { id: 'backend', name: 'Backend Team', description: 'Server and API development' },
-        { id: 'design', name: 'Design Team', description: 'UX/UI and product design' },
-        { id: 'devops', name: 'DevOps Team', description: 'Infrastructure and deployment' }
+        { id: 'frontend', name: 'Frontend Team', description: 'User interface development', isActive: true },
+        { id: 'backend', name: 'Backend Team', description: 'Server and API development', isActive: true },
+        { id: 'design', name: 'Design Team', description: 'UX/UI and product design', isActive: false },
+        { id: 'devops', name: 'DevOps Team', description: 'Infrastructure and deployment', isActive: false }
       ]
       setTeams(defaultTeams)
-      setSelectedTeamId(defaultTeams[0].id)
+      setSelectedTeamId(defaultTeams.find(t => t.isActive)?.id || defaultTeams[0].id)
     }
   }, [])
 
@@ -222,7 +225,8 @@ function App() {
   // Set default selected team
   useEffect(() => {
     if (teams && teams.length > 0 && !selectedTeamId) {
-      setSelectedTeamId(teams[0].id)
+      const activeTeam = teams.find(t => t.isActive)
+      setSelectedTeamId(activeTeam?.id || teams[0].id)
     }
   }, [teams, selectedTeamId])
 
@@ -255,6 +259,17 @@ function App() {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
   }
 
+  const updateTeamStatus = (teamId: string, isActive: boolean) => {
+    setTeams(current => 
+      (current || []).map(team => 
+        team.id === teamId ? { ...team, isActive } : team
+      )
+    )
+  }
+
+  // Filter to show only active teams in the selector
+  const activeTeams = teams?.filter(team => team.isActive) || []
+  
   // Filter members by selected team
   const filteredMembers = (teamMembers || []).filter(member => member.teamId === selectedTeamId)
   
@@ -318,18 +333,29 @@ function App() {
           </div>
           <div className="flex items-center gap-3">
             {/* Team Selector */}
-            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select a team" />
-              </SelectTrigger>
-              <SelectContent>
-                {teams?.map(team => (
-                  <SelectItem key={team.id} value={team.id}>
-                    {team.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select a team" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeTeams.map(team => (
+                    <SelectItem key={team.id} value={team.id}>
+                      {team.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsTeamManagementOpen(true)}
+                className="p-2"
+                title="Manage Teams"
+              >
+                <Settings size={16} />
+              </Button>
+            </div>
             <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
               <Plus size={16} />
               Add Team Member
@@ -384,22 +410,36 @@ function App() {
         </Card>
 
         {/* Main Content */}
-        {(!teamMembers || teamMembers.length === 0 || filteredMembers.length === 0) ? (
+        {(!teamMembers || teamMembers.length === 0 || filteredMembers.length === 0 || activeTeams.length === 0) ? (
           <Card className="p-12 text-center">
             <Users size={64} className="mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">
-              {(!teamMembers || teamMembers.length === 0) ? 'No team members yet' : `No members in ${selectedTeam?.name || 'this team'}`}
+              {activeTeams.length === 0 
+                ? 'No teams enabled' 
+                : (!teamMembers || teamMembers.length === 0) 
+                  ? 'No team members yet' 
+                  : `No members in ${selectedTeam?.name || 'this team'}`
+              }
             </h3>
             <p className="text-muted-foreground mb-4">
-              {(!teamMembers || teamMembers.length === 0) 
-                ? 'Start by adding team members to begin capacity planning'
-                : `Add team members to ${selectedTeam?.name || 'this team'} to start capacity planning`
+              {activeTeams.length === 0
+                ? 'Enable at least one team in the team management settings to start capacity planning'
+                : (!teamMembers || teamMembers.length === 0) 
+                  ? 'Start by adding team members to begin capacity planning'
+                  : `Add team members to ${selectedTeam?.name || 'this team'} to start capacity planning`
               }
             </p>
-            <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
-              <Plus size={16} />
-              Add {(!teamMembers || teamMembers.length === 0) ? 'Your First' : 'Team'} Member
-            </Button>
+            {activeTeams.length === 0 ? (
+              <Button onClick={() => setIsTeamManagementOpen(true)} className="gap-2">
+                <Settings size={16} />
+                Manage Teams
+              </Button>
+            ) : (
+              <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
+                <Plus size={16} />
+                Add {(!teamMembers || teamMembers.length === 0) ? 'Your First' : 'Team'} Member
+              </Button>
+            )}
           </Card>
         ) : (
           <div className="w-full">
@@ -422,6 +462,14 @@ function App() {
           onAddMember={addTeamMember}
           teams={teams || []}
           selectedTeamId={selectedTeamId}
+        />
+
+        {/* Team Management Dialog */}
+        <TeamManagementDialog
+          open={isTeamManagementOpen}
+          onOpenChange={setIsTeamManagementOpen}
+          teams={teams || []}
+          onUpdateTeamStatus={updateTeamStatus}
         />
       </div>
       <Toaster />
