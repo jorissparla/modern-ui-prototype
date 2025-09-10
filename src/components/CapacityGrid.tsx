@@ -1,5 +1,7 @@
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { ArrowUp, ArrowDown } from '@phosphor-icons/react'
 import { TeamMember, Assignment } from '../App'
 import { StatusCell } from './StatusCell'
 
@@ -8,14 +10,22 @@ interface CapacityGridProps {
   currentDate: Date
   getAssignments: (memberId: string, date: string) => Assignment[]
   updateAssignment: (memberId: string, date: string, status: Assignment['status'], timeSlot?: Assignment['timeSlot']) => void
+  sortDirection: 'asc' | 'desc'
+  onToggleSort: () => void
 }
 
-export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment }: CapacityGridProps) {
+export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort }: CapacityGridProps) {
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
     const month = date.getMonth()
     const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const days = []
+    const days: Array<{
+      day: number
+      date: Date
+      dateString: string
+      dayName: string
+      isWeekend: boolean
+    }> = []
     
     for (let day = 1; day <= daysInMonth; day++) {
       const dayDate = new Date(year, month, day)
@@ -53,6 +63,17 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
           {/* Header Row */}
           <div className="flex gap-1 mb-2">
             <div className="w-48 font-medium text-sm text-muted-foreground flex items-center">Team Member</div>
+            <div className="w-32 font-medium text-sm text-muted-foreground flex items-center gap-1">
+              Load
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-6 w-6 p-0 hover:bg-muted"
+                onClick={onToggleSort}
+              >
+                {sortDirection === 'asc' ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+              </Button>
+            </div>
             {days.map((day) => (
               <div 
                 key={day.day} 
@@ -72,6 +93,23 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
               <div className="w-48 p-2 bg-card border rounded flex flex-col justify-center flex-shrink-0">
                 <div className="font-medium text-sm truncate">{member.name}</div>
                 <div className="text-xs text-muted-foreground truncate">{member.role}</div>
+              </div>
+              
+              <div className="w-32 p-2 bg-card border rounded flex flex-col justify-center flex-shrink-0">
+                <div className="text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Backlog:</span>
+                    <span className="font-medium">{member.load.backlog}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Awaiting:</span>
+                    <span className="font-medium">{member.load.awaitingCustomer}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Research:</span>
+                    <span className="font-medium">{member.load.researching}</span>
+                  </div>
+                </div>
               </div>
               
               {days.map((day) => {

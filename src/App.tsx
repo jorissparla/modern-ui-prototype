@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Toaster } from '@/components/ui/sonner'
-import { ChevronLeft, ChevronRight, Plus, Users } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown } from '@phosphor-icons/react'
 import { AddMemberDialog } from './components/AddMemberDialog'
 import { CapacityGrid } from './components/CapacityGrid'
 import { TeamMemberList } from './components/TeamMemberList'
@@ -14,6 +14,11 @@ export interface TeamMember {
   name: string
   role: string
   info: string
+  load: {
+    backlog: number
+    awaitingCustomer: number
+    researching: number
+  }
 }
 
 export interface Assignment {
@@ -29,21 +34,82 @@ function App() {
   const [assignments, setAssignments] = useKV<Assignment[]>('assignments', [])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   // Initialize with default team members if empty
   useEffect(() => {
-    if (teamMembers.length === 0) {
+    if (!teamMembers || teamMembers.length === 0) {
       const defaultMembers: TeamMember[] = [
-        { id: '1', name: 'Sarah Chen', role: 'Frontend Developer', info: 'React specialist' },
-        { id: '2', name: 'Marcus Johnson', role: 'Backend Developer', info: 'Node.js expert' },
-        { id: '3', name: 'Elena Rodriguez', role: 'UX Designer', info: 'Design systems' },
-        { id: '4', name: 'David Kim', role: 'DevOps Engineer', info: 'AWS & Docker' },
-        { id: '5', name: 'Priya Sharma', role: 'Product Manager', info: 'Agile methodologies' },
-        { id: '6', name: 'Alex Thompson', role: 'Full Stack Developer', info: 'Python & React' },
-        { id: '7', name: 'Nina Petrov', role: 'QA Engineer', info: 'Automation testing' },
-        { id: '8', name: 'James Wilson', role: 'Data Scientist', info: 'ML & Analytics' },
-        { id: '9', name: 'Zoe Martinez', role: 'Mobile Developer', info: 'React Native' },
-        { id: '10', name: 'Ryan O\'Connor', role: 'Tech Lead', info: 'Architecture & mentoring' }
+        { 
+          id: '1', 
+          name: 'Sarah Chen', 
+          role: 'Frontend Developer', 
+          info: 'React specialist',
+          load: { backlog: 8, awaitingCustomer: 2, researching: 1 }
+        },
+        { 
+          id: '2', 
+          name: 'Marcus Johnson', 
+          role: 'Backend Developer', 
+          info: 'Node.js expert',
+          load: { backlog: 12, awaitingCustomer: 1, researching: 3 }
+        },
+        { 
+          id: '3', 
+          name: 'Elena Rodriguez', 
+          role: 'UX Designer', 
+          info: 'Design systems',
+          load: { backlog: 5, awaitingCustomer: 4, researching: 2 }
+        },
+        { 
+          id: '4', 
+          name: 'David Kim', 
+          role: 'DevOps Engineer', 
+          info: 'AWS & Docker',
+          load: { backlog: 15, awaitingCustomer: 0, researching: 1 }
+        },
+        { 
+          id: '5', 
+          name: 'Priya Sharma', 
+          role: 'Product Manager', 
+          info: 'Agile methodologies',
+          load: { backlog: 3, awaitingCustomer: 6, researching: 4 }
+        },
+        { 
+          id: '6', 
+          name: 'Alex Thompson', 
+          role: 'Full Stack Developer', 
+          info: 'Python & React',
+          load: { backlog: 9, awaitingCustomer: 2, researching: 2 }
+        },
+        { 
+          id: '7', 
+          name: 'Nina Petrov', 
+          role: 'QA Engineer', 
+          info: 'Automation testing',
+          load: { backlog: 7, awaitingCustomer: 3, researching: 1 }
+        },
+        { 
+          id: '8', 
+          name: 'James Wilson', 
+          role: 'Data Scientist', 
+          info: 'ML & Analytics',
+          load: { backlog: 11, awaitingCustomer: 1, researching: 5 }
+        },
+        { 
+          id: '9', 
+          name: 'Zoe Martinez', 
+          role: 'Mobile Developer', 
+          info: 'React Native',
+          load: { backlog: 6, awaitingCustomer: 2, researching: 1 }
+        },
+        { 
+          id: '10', 
+          name: 'Ryan O\'Connor', 
+          role: 'Tech Lead', 
+          info: 'Architecture & mentoring',
+          load: { backlog: 4, awaitingCustomer: 1, researching: 3 }
+        }
       ]
       setTeamMembers(defaultMembers)
     }
@@ -71,24 +137,34 @@ function App() {
       ...member,
       id: Date.now().toString()
     }
-    setTeamMembers(current => [...current, newMember])
+    setTeamMembers(current => [...(current || []), newMember])
   }
+
+  const toggleSort = () => {
+    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+  }
+
+  const sortedMembers = [...(teamMembers || [])].sort((a, b) => {
+    const comparison = a.load.backlog - b.load.backlog
+    return sortDirection === 'asc' ? comparison : -comparison
+  })
 
   const updateAssignment = (memberId: string, date: string, status: Assignment['status'], timeSlot: Assignment['timeSlot'] = 'full-day') => {
     setAssignments(current => {
+      const currentAssignments = current || []
       // If setting to available, remove all assignments for this date
       if (status === 'available') {
-        return current.filter(a => !(a.memberId === memberId && a.date === date))
+        return currentAssignments.filter(a => !(a.memberId === memberId && a.date === date))
       }
       
       // For full-day assignments, replace any existing assignments
       if (timeSlot === 'full-day') {
-        const filtered = current.filter(a => !(a.memberId === memberId && a.date === date))
+        const filtered = currentAssignments.filter(a => !(a.memberId === memberId && a.date === date))
         return [...filtered, { memberId, date, status, timeSlot }]
       }
       
       // For time-specific assignments, check if there's a conflicting assignment
-      const existing = current.find(a => 
+      const existing = currentAssignments.find(a => 
         a.memberId === memberId && 
         a.date === date && 
         (a.timeSlot === timeSlot || a.timeSlot === 'full-day')
@@ -96,20 +172,20 @@ function App() {
       
       if (existing) {
         // Update existing assignment
-        return current.map(a => 
+        return currentAssignments.map(a => 
           a.memberId === memberId && a.date === date && a.timeSlot === timeSlot
             ? { ...a, status }
             : a
         )
       } else {
         // Add new assignment
-        return [...current, { memberId, date, status, timeSlot }]
+        return [...currentAssignments, { memberId, date, status, timeSlot }]
       }
     })
   }
 
   const getAssignments = (memberId: string, date: string): Assignment[] => {
-    return assignments.filter(a => a.memberId === memberId && a.date === date)
+    return (assignments || []).filter(a => a.memberId === memberId && a.date === date)
   }
 
   return (
@@ -138,7 +214,7 @@ function App() {
                 Capacity Overview
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {teamMembers.length} team members
+                {(teamMembers || []).length} team members
               </span>
             </div>
             
@@ -149,7 +225,7 @@ function App() {
                 onClick={() => navigateMonth('prev')}
                 className="p-2"
               >
-                <ChevronLeft size={16} />
+                <CaretLeft size={16} />
               </Button>
               
               <div className="px-4 py-2 text-sm font-medium bg-secondary rounded-md">
@@ -162,14 +238,14 @@ function App() {
                 onClick={() => navigateMonth('next')}
                 className="p-2"
               >
-                <ChevronRight size={16} />
+                <CaretRight size={16} />
               </Button>
             </div>
           </div>
         </Card>
 
         {/* Main Content */}
-        {teamMembers.length === 0 ? (
+        {(!teamMembers || teamMembers.length === 0) ? (
           <Card className="p-12 text-center">
             <Users size={64} className="mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No team members yet</h3>
@@ -185,10 +261,12 @@ function App() {
           <div className="w-full">
             {/* Capacity Grid */}
             <CapacityGrid
-              members={teamMembers}
+              members={sortedMembers}
               currentDate={currentDate}
               getAssignments={getAssignments}
               updateAssignment={updateAssignment}
+              sortDirection={sortDirection}
+              onToggleSort={toggleSort}
             />
           </div>
         )}

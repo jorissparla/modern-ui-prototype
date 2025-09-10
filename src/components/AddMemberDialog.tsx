@@ -16,6 +16,9 @@ export function AddMemberDialog({ open, onOpenChange, onAddMember }: AddMemberDi
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [info, setInfo] = useState('')
+  const [backlog, setBacklog] = useState('0')
+  const [awaitingCustomer, setAwaitingCustomer] = useState('0')
+  const [researching, setResearching] = useState('0')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,11 +26,19 @@ export function AddMemberDialog({ open, onOpenChange, onAddMember }: AddMemberDi
       onAddMember({
         name: name.trim(),
         role: role.trim(),
-        info: info.trim()
+        info: info.trim(),
+        load: {
+          backlog: parseInt(backlog) || 0,
+          awaitingCustomer: parseInt(awaitingCustomer) || 0,
+          researching: parseInt(researching) || 0
+        }
       })
       setName('')
       setRole('')
       setInfo('')
+      setBacklog('0')
+      setAwaitingCustomer('0')
+      setResearching('0')
       onOpenChange(false)
     }
   }
@@ -70,6 +81,45 @@ export function AddMemberDialog({ open, onOpenChange, onAddMember }: AddMemberDi
               placeholder="Skills, location, notes..."
               rows={3}
             />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Current Load</Label>
+            <div className="grid grid-cols-3 gap-2">
+              <div>
+                <Label htmlFor="backlog" className="text-xs">Backlog</Label>
+                <Input
+                  id="backlog"
+                  type="number"
+                  min="0"
+                  value={backlog}
+                  onChange={(e) => setBacklog(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="awaiting" className="text-xs">Awaiting Customer</Label>
+                <Input
+                  id="awaiting"
+                  type="number"
+                  min="0"
+                  value={awaitingCustomer}
+                  onChange={(e) => setAwaitingCustomer(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label htmlFor="researching" className="text-xs">Researching</Label>
+                <Input
+                  id="researching"
+                  type="number"
+                  min="0"
+                  value={researching}
+                  onChange={(e) => setResearching(e.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            </div>
           </div>
           
           <div className="flex justify-end gap-2">
