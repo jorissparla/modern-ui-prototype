@@ -1,32 +1,44 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { TeamMember } from '../App'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { TeamMember, Team } from '../App'
 
 interface AddMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onAddMember: (member: Omit<TeamMember, 'id'>) => void
+  teams: Team[]
+  selectedTeamId: string
 }
 
-export function AddMemberDialog({ open, onOpenChange, onAddMember }: AddMemberDialogProps) {
+export function AddMemberDialog({ open, onOpenChange, onAddMember, teams, selectedTeamId }: AddMemberDialogProps) {
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [info, setInfo] = useState('')
   const [backlog, setBacklog] = useState('0')
   const [awaitingCustomer, setAwaitingCustomer] = useState('0')
   const [researching, setResearching] = useState('0')
+  const [teamId, setTeamId] = useState(selectedTeamId)
+
+  // Update teamId when selectedTeamId changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setTeamId(selectedTeamId)
+    }
+  }, [open, selectedTeamId])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (name.trim() && role.trim()) {
+    if (name.trim() && role.trim() && teamId) {
       onAddMember({
         name: name.trim(),
         role: role.trim(),
         info: info.trim(),
+        teamId,
         load: {
           backlog: parseInt(backlog) || 0,
           awaitingCustomer: parseInt(awaitingCustomer) || 0,
@@ -39,6 +51,7 @@ export function AddMemberDialog({ open, onOpenChange, onAddMember }: AddMemberDi
       setBacklog('0')
       setAwaitingCustomer('0')
       setResearching('0')
+      setTeamId(selectedTeamId)
       onOpenChange(false)
     }
   }
@@ -50,6 +63,22 @@ export function AddMemberDialog({ open, onOpenChange, onAddMember }: AddMemberDi
           <DialogTitle>Add Team Member</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="team">Team</Label>
+            <Select value={teamId} onValueChange={setTeamId} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map(team => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Toaster } from '@/components/ui/sonner'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown } from '@phosphor-icons/react'
 import { AddMemberDialog } from './components/AddMemberDialog'
 import { CapacityGrid } from './components/CapacityGrid'
@@ -14,11 +15,18 @@ export interface TeamMember {
   name: string
   role: string
   info: string
+  teamId: string
   load: {
     backlog: number
     awaitingCustomer: number
     researching: number
   }
+}
+
+export interface Team {
+  id: string
+  name: string
+  description: string
 }
 
 export interface Assignment {
@@ -30,90 +38,193 @@ export interface Assignment {
 }
 
 function App() {
+  const [teams, setTeams] = useKV<Team[]>('teams', [])
   const [teamMembers, setTeamMembers] = useKV<TeamMember[]>('team-members', [])
   const [assignments, setAssignments] = useKV<Assignment[]>('assignments', [])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [selectedTeamId, setSelectedTeamId] = useState<string>('')
 
-  // Initialize with default team members if empty
+  // Initialize with default teams and members if empty
+  useEffect(() => {
+    if (!teams || teams.length === 0) {
+      const defaultTeams: Team[] = [
+        { id: 'frontend', name: 'Frontend Team', description: 'User interface development' },
+        { id: 'backend', name: 'Backend Team', description: 'Server and API development' },
+        { id: 'design', name: 'Design Team', description: 'UX/UI and product design' },
+        { id: 'devops', name: 'DevOps Team', description: 'Infrastructure and deployment' }
+      ]
+      setTeams(defaultTeams)
+      setSelectedTeamId(defaultTeams[0].id)
+    }
+  }, [])
+
   useEffect(() => {
     if (!teamMembers || teamMembers.length === 0) {
       const defaultMembers: TeamMember[] = [
+        // Frontend Team
         { 
           id: '1', 
           name: 'Sarah Chen', 
           role: 'Frontend Developer', 
           info: 'React specialist',
+          teamId: 'frontend',
           load: { backlog: 8, awaitingCustomer: 2, researching: 1 }
         },
         { 
           id: '2', 
-          name: 'Marcus Johnson', 
-          role: 'Backend Developer', 
-          info: 'Node.js expert',
-          load: { backlog: 12, awaitingCustomer: 1, researching: 3 }
+          name: 'Alex Thompson', 
+          role: 'Senior Frontend Developer', 
+          info: 'Vue.js & TypeScript',
+          teamId: 'frontend',
+          load: { backlog: 6, awaitingCustomer: 3, researching: 2 }
         },
         { 
           id: '3', 
-          name: 'Elena Rodriguez', 
-          role: 'UX Designer', 
-          info: 'Design systems',
-          load: { backlog: 5, awaitingCustomer: 4, researching: 2 }
-        },
-        { 
-          id: '4', 
-          name: 'David Kim', 
-          role: 'DevOps Engineer', 
-          info: 'AWS & Docker',
-          load: { backlog: 15, awaitingCustomer: 0, researching: 1 }
-        },
-        { 
-          id: '5', 
-          name: 'Priya Sharma', 
-          role: 'Product Manager', 
-          info: 'Agile methodologies',
-          load: { backlog: 3, awaitingCustomer: 6, researching: 4 }
-        },
-        { 
-          id: '6', 
-          name: 'Alex Thompson', 
-          role: 'Full Stack Developer', 
-          info: 'Python & React',
-          load: { backlog: 9, awaitingCustomer: 2, researching: 2 }
-        },
-        { 
-          id: '7', 
-          name: 'Nina Petrov', 
-          role: 'QA Engineer', 
-          info: 'Automation testing',
-          load: { backlog: 7, awaitingCustomer: 3, researching: 1 }
-        },
-        { 
-          id: '8', 
-          name: 'James Wilson', 
-          role: 'Data Scientist', 
-          info: 'ML & Analytics',
-          load: { backlog: 11, awaitingCustomer: 1, researching: 5 }
-        },
-        { 
-          id: '9', 
           name: 'Zoe Martinez', 
           role: 'Mobile Developer', 
           info: 'React Native',
-          load: { backlog: 6, awaitingCustomer: 2, researching: 1 }
+          teamId: 'frontend',
+          load: { backlog: 12, awaitingCustomer: 1, researching: 1 }
+        },
+        { 
+          id: '4', 
+          name: 'Oliver Johnson', 
+          role: 'Frontend Engineer', 
+          info: 'Angular & SCSS',
+          teamId: 'frontend',
+          load: { backlog: 9, awaitingCustomer: 2, researching: 3 }
+        },
+        { 
+          id: '5', 
+          name: 'Maya Patel', 
+          role: 'UI Developer', 
+          info: 'Component libraries',
+          teamId: 'frontend',
+          load: { backlog: 5, awaitingCustomer: 4, researching: 1 }
+        },
+
+        // Backend Team
+        { 
+          id: '6', 
+          name: 'Marcus Johnson', 
+          role: 'Backend Developer', 
+          info: 'Node.js expert',
+          teamId: 'backend',
+          load: { backlog: 15, awaitingCustomer: 1, researching: 3 }
+        },
+        { 
+          id: '7', 
+          name: 'Elena Rodriguez', 
+          role: 'Python Developer', 
+          info: 'Django & FastAPI',
+          teamId: 'backend',
+          load: { backlog: 11, awaitingCustomer: 2, researching: 4 }
+        },
+        { 
+          id: '8', 
+          name: 'David Kim', 
+          role: 'Java Developer', 
+          info: 'Spring Boot',
+          teamId: 'backend',
+          load: { backlog: 7, awaitingCustomer: 5, researching: 2 }
+        },
+        { 
+          id: '9', 
+          name: 'James Wilson', 
+          role: 'Database Engineer', 
+          info: 'PostgreSQL & MongoDB',
+          teamId: 'backend',
+          load: { backlog: 13, awaitingCustomer: 1, researching: 1 }
         },
         { 
           id: '10', 
+          name: 'Sofia Andersson', 
+          role: 'API Developer', 
+          info: 'GraphQL & REST',
+          teamId: 'backend',
+          load: { backlog: 8, awaitingCustomer: 3, researching: 2 }
+        },
+
+        // Design Team
+        { 
+          id: '11', 
+          name: 'Priya Sharma', 
+          role: 'UX Designer', 
+          info: 'User research',
+          teamId: 'design',
+          load: { backlog: 4, awaitingCustomer: 6, researching: 5 }
+        },
+        { 
+          id: '12', 
+          name: 'Nina Petrov', 
+          role: 'UI Designer', 
+          info: 'Design systems',
+          teamId: 'design',
+          load: { backlog: 6, awaitingCustomer: 4, researching: 3 }
+        },
+        { 
+          id: '13', 
+          name: 'Lucas Brown', 
+          role: 'Product Designer', 
+          info: 'Prototyping & testing',
+          teamId: 'design',
+          load: { backlog: 9, awaitingCustomer: 2, researching: 4 }
+        },
+        { 
+          id: '14', 
+          name: 'Isabella Garcia', 
+          role: 'Graphic Designer', 
+          info: 'Branding & illustrations',
+          teamId: 'design',
+          load: { backlog: 3, awaitingCustomer: 7, researching: 2 }
+        },
+
+        // DevOps Team
+        { 
+          id: '15', 
           name: 'Ryan O\'Connor', 
-          role: 'Tech Lead', 
-          info: 'Architecture & mentoring',
-          load: { backlog: 4, awaitingCustomer: 1, researching: 3 }
+          role: 'DevOps Engineer', 
+          info: 'AWS & Kubernetes',
+          teamId: 'devops',
+          load: { backlog: 18, awaitingCustomer: 0, researching: 2 }
+        },
+        { 
+          id: '16', 
+          name: 'Emma Thompson', 
+          role: 'Site Reliability Engineer', 
+          info: 'Monitoring & alerts',
+          teamId: 'devops',
+          load: { backlog: 14, awaitingCustomer: 1, researching: 3 }
+        },
+        { 
+          id: '17', 
+          name: 'Carlos Mendez', 
+          role: 'Cloud Engineer', 
+          info: 'Azure & Terraform',
+          teamId: 'devops',
+          load: { backlog: 10, awaitingCustomer: 2, researching: 1 }
+        },
+        { 
+          id: '18', 
+          name: 'Aisha Ibrahim', 
+          role: 'Security Engineer', 
+          info: 'CI/CD & security',
+          teamId: 'devops',
+          load: { backlog: 12, awaitingCustomer: 1, researching: 4 }
         }
       ]
       setTeamMembers(defaultMembers)
     }
   }, [])
+
+  // Set default selected team
+  useEffect(() => {
+    if (teams && teams.length > 0 && !selectedTeamId) {
+      setSelectedTeamId(teams[0].id)
+    }
+  }, [teams, selectedTeamId])
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -144,10 +255,15 @@ function App() {
     setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
   }
 
-  const sortedMembers = [...(teamMembers || [])].sort((a, b) => {
+  // Filter members by selected team
+  const filteredMembers = (teamMembers || []).filter(member => member.teamId === selectedTeamId)
+  
+  const sortedMembers = [...filteredMembers].sort((a, b) => {
     const comparison = a.load.backlog - b.load.backlog
     return sortDirection === 'asc' ? comparison : -comparison
   })
+
+  const selectedTeam = teams?.find(team => team.id === selectedTeamId)
 
   const updateAssignment = (memberId: string, date: string, status: Assignment['status'], timeSlot: Assignment['timeSlot'] = 'full-day') => {
     setAssignments(current => {
@@ -200,10 +316,25 @@ function App() {
               <p className="text-muted-foreground">Manage team availability and project assignments</p>
             </div>
           </div>
-          <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
-            <Plus size={16} />
-            Add Team Member
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* Team Selector */}
+            <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select a team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams?.map(team => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
+              <Plus size={16} />
+              Add Team Member
+            </Button>
+          </div>
         </div>
 
         {/* Navigation Bar */}
@@ -211,11 +342,19 @@ function App() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Badge variant="secondary" className="text-sm font-medium">
-                Capacity Overview
+                {selectedTeam?.name || 'Team'} Capacity
               </Badge>
               <span className="text-sm text-muted-foreground">
-                {(teamMembers || []).length} team members
+                {filteredMembers.length} team members
               </span>
+              {selectedTeam?.description && (
+                <span className="text-sm text-muted-foreground">•</span>
+              )}
+              {selectedTeam?.description && (
+                <span className="text-sm text-muted-foreground">
+                  {selectedTeam.description}
+                </span>
+              )}
             </div>
             
             <div className="flex items-center gap-2">
@@ -245,16 +384,21 @@ function App() {
         </Card>
 
         {/* Main Content */}
-        {(!teamMembers || teamMembers.length === 0) ? (
+        {(!teamMembers || teamMembers.length === 0 || filteredMembers.length === 0) ? (
           <Card className="p-12 text-center">
             <Users size={64} className="mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No team members yet</h3>
+            <h3 className="text-lg font-semibold mb-2">
+              {(!teamMembers || teamMembers.length === 0) ? 'No team members yet' : `No members in ${selectedTeam?.name || 'this team'}`}
+            </h3>
             <p className="text-muted-foreground mb-4">
-              Start by adding team members to begin capacity planning
+              {(!teamMembers || teamMembers.length === 0) 
+                ? 'Start by adding team members to begin capacity planning'
+                : `Add team members to ${selectedTeam?.name || 'this team'} to start capacity planning`
+              }
             </p>
             <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
               <Plus size={16} />
-              Add Your First Team Member
+              Add {(!teamMembers || teamMembers.length === 0) ? 'Your First' : 'Team'} Member
             </Button>
           </Card>
         ) : (
@@ -276,6 +420,8 @@ function App() {
           open={isAddMemberOpen}
           onOpenChange={setIsAddMemberOpen}
           onAddMember={addTeamMember}
+          teams={teams || []}
+          selectedTeamId={selectedTeamId}
         />
       </div>
       <Toaster />
