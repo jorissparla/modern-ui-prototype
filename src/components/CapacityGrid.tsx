@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowUp, ArrowDown } from '@phosphor-icons/react'
-import { TeamMember, Assignment } from '../App'
+import { TeamMember, Assignment, ActivityCode } from '../App'
 import { StatusCell } from './StatusCell'
 
 interface CapacityGridProps {
@@ -12,9 +12,10 @@ interface CapacityGridProps {
   updateAssignment: (memberId: string, date: string, status: Assignment['status'], timeSlot?: Assignment['timeSlot']) => void
   sortDirection: 'asc' | 'desc'
   onToggleSort: () => void
+  activityCodes: ActivityCode[]
 }
 
-export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort }: CapacityGridProps) {
+export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort, activityCodes }: CapacityGridProps) {
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -43,6 +44,9 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
 
   const days = getDaysInMonth(currentDate)
   const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  
+  // Filter to show only active activity codes in the legend
+  const activeActivityCodes = activityCodes.filter(code => code.isActive)
 
   return (
     <Card className="p-4">
@@ -50,10 +54,14 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
         <h3 className="font-semibold mb-2">Capacity Grid - {monthName}</h3>
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline" className="text-xs">Available (Blank)</Badge>
-          <Badge className="bg-yellow-500 text-white text-xs">Busy</Badge>
-          <Badge className="bg-purple-500 text-white text-xs">Holiday</Badge>
-          <Badge className="bg-blue-500 text-white text-xs">Project A</Badge>
-          <Badge className="bg-emerald-500 text-white text-xs">Project B</Badge>
+          {activeActivityCodes.map(code => (
+            <Badge 
+              key={code.id}
+              className={`${code.color} text-white text-xs`}
+            >
+              {code.label} ({code.shortLabel})
+            </Badge>
+          ))}
           <div className="text-xs text-muted-foreground ml-2">Split cells: Morning (top) / Afternoon (bottom)</div>
         </div>
       </div>
@@ -134,6 +142,7 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
                       assignments={assignments}
                       isWeekend={day.isWeekend}
                       onUpdate={(status, timeSlot) => updateAssignment(member.id, day.dateString, status, timeSlot)}
+                      activityCodes={activityCodes}
                     />
                   )
                 })}

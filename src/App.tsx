@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Toaster } from '@/components/ui/sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown, Settings } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown, Settings, Palette } from '@phosphor-icons/react'
 import { AddMemberDialog } from './components/AddMemberDialog'
 import { CapacityGrid } from './components/CapacityGrid'
 import { TeamMemberList } from './components/TeamMemberList'
 import { TeamManagementDialog } from './components/TeamManagementDialog'
+import { ActivityCodesDialog } from './components/ActivityCodesDialog'
 
 export interface TeamMember {
   id: string
@@ -31,10 +32,19 @@ export interface Team {
   isActive: boolean
 }
 
+export interface ActivityCode {
+  id: string
+  label: string
+  shortLabel: string
+  color: string
+  isActive: boolean
+  isBuiltIn: boolean
+}
+
 export interface Assignment {
   memberId: string
   date: string
-  status: 'available' | 'busy' | 'holiday' | 'project-a' | 'project-b'
+  status: 'available' | 'busy' | 'holiday' | 'project-a' | 'project-b' | 'meeting' | 'training' | 'support' | 'research' | 'vacation' | 'sick'
   timeSlot?: 'morning' | 'afternoon' | 'full-day'
   project?: string
 }
@@ -43,12 +53,32 @@ function App() {
   const [teams, setTeams] = useKV<Team[]>('teams', [])
   const [teamMembers, setTeamMembers] = useKV<TeamMember[]>('team-members', [])
   const [assignments, setAssignments] = useKV<Assignment[]>('assignments', [])
+  const [activityCodes, setActivityCodes] = useKV<ActivityCode[]>('activity-codes', [])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false)
+  const [isActivityCodesOpen, setIsActivityCodesOpen] = useState(false)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
 
+  // Initialize with default activity codes if empty
+  useEffect(() => {
+    if (!activityCodes || activityCodes.length === 0) {
+      const defaultActivityCodes: ActivityCode[] = [
+        { id: 'busy', label: 'Busy', shortLabel: 'B', color: 'bg-yellow-500', isActive: true, isBuiltIn: true },
+        { id: 'holiday', label: 'Holiday', shortLabel: 'H', color: 'bg-purple-500', isActive: true, isBuiltIn: true },
+        { id: 'project-a', label: 'Project A', shortLabel: 'PA', color: 'bg-blue-500', isActive: true, isBuiltIn: true },
+        { id: 'project-b', label: 'Project B', shortLabel: 'PB', color: 'bg-emerald-500', isActive: true, isBuiltIn: true },
+        { id: 'meeting', label: 'Meeting', shortLabel: 'M', color: 'bg-orange-500', isActive: true, isBuiltIn: true },
+        { id: 'training', label: 'Training', shortLabel: 'T', color: 'bg-indigo-500', isActive: true, isBuiltIn: true },
+        { id: 'support', label: 'Support', shortLabel: 'S', color: 'bg-red-500', isActive: false, isBuiltIn: true },
+        { id: 'research', label: 'R&D', shortLabel: 'R', color: 'bg-teal-500', isActive: false, isBuiltIn: true },
+        { id: 'vacation', label: 'Vacation', shortLabel: 'V', color: 'bg-pink-500', isActive: false, isBuiltIn: true },
+        { id: 'sick', label: 'Sick Leave', shortLabel: 'SL', color: 'bg-gray-500', isActive: false, isBuiltIn: true }
+      ]
+      setActivityCodes(defaultActivityCodes)
+    }
+  }, [])
   // Initialize with default teams and members if empty
   useEffect(() => {
     if (!teams || teams.length === 0) {
@@ -267,6 +297,10 @@ function App() {
     )
   }
 
+  const updateActivityCodes = (codes: ActivityCode[]) => {
+    setActivityCodes(codes)
+  }
+
   // Filter to show only active teams in the selector
   const activeTeams = teams?.filter(team => team.isActive) || []
   
@@ -356,10 +390,20 @@ function App() {
                 <Settings size={16} />
               </Button>
             </div>
-            <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
-              <Plus size={16} />
-              Add Team Member
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button onClick={() => setIsAddMemberOpen(true)} className="gap-2">
+                <Plus size={16} />
+                Add Team Member
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsActivityCodesOpen(true)}
+                className="gap-2"
+              >
+                <Palette size={16} />
+                Activity Codes
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -451,6 +495,7 @@ function App() {
               updateAssignment={updateAssignment}
               sortDirection={sortDirection}
               onToggleSort={toggleSort}
+              activityCodes={activityCodes || []}
             />
           </div>
         )}
@@ -470,6 +515,14 @@ function App() {
           onOpenChange={setIsTeamManagementOpen}
           teams={teams || []}
           onUpdateTeamStatus={updateTeamStatus}
+        />
+
+        {/* Activity Codes Dialog */}
+        <ActivityCodesDialog
+          open={isActivityCodesOpen}
+          onOpenChange={setIsActivityCodesOpen}
+          activityCodes={activityCodes || []}
+          onUpdateActivityCodes={updateActivityCodes}
         />
       </div>
       <Toaster />

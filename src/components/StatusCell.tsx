@@ -1,22 +1,15 @@
 import { useState } from 'react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
-import { Assignment } from '../App'
+import { Assignment, ActivityCode } from '../App'
 
 interface StatusCellProps {
   assignments: Assignment[]
   isWeekend: boolean
   onUpdate: (status: Assignment['status'], timeSlot?: Assignment['timeSlot']) => void
+  activityCodes: ActivityCode[]
 }
 
-const statusConfig = {
-  available: { label: 'Available', class: 'bg-transparent', short: '' },
-  busy: { label: 'Busy', class: 'bg-yellow-500', short: 'B' },
-  holiday: { label: 'Holiday', class: 'bg-purple-500', short: 'H' },
-  'project-a': { label: 'Project A', class: 'bg-blue-500', short: 'PA' },
-  'project-b': { label: 'Project B', class: 'bg-emerald-500', short: 'PB' }
-}
-
-export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps) {
+export function StatusCell({ assignments, isWeekend, onUpdate, activityCodes }: StatusCellProps) {
   const [isOpen, setIsOpen] = useState(false)
   
   const hasFullDayAssignment = assignments.some(a => a.timeSlot === 'full-day')
@@ -25,21 +18,26 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
   
   const isAvailable = assignments.length === 0 || assignments.every(a => a.status === 'available')
   
+  // Filter to only show active activity codes
+  const activeActivityCodes = activityCodes.filter(code => code.isActive)
+  
+  // Create a lookup map for activity codes (including available)
+  const activityCodeMap = new Map([
+    ['available', { label: 'Available', shortLabel: '', color: 'bg-transparent' }],
+    ...activeActivityCodes.map(code => [code.id, { 
+      label: code.label, 
+      shortLabel: code.shortLabel, 
+      color: code.color 
+    }])
+  ])
+  
+  const getActivityCodeConfig = (status: Assignment['status']) => {
+    return activityCodeMap.get(status) || { label: 'Unknown', shortLabel: '?', color: 'bg-gray-400' }
+  }
+  
   const getStatusColor = (status: Assignment['status']) => {
-    switch (status) {
-      case 'available':
-        return 'bg-transparent'
-      case 'busy':
-        return 'bg-yellow-500'
-      case 'holiday':
-        return 'bg-purple-500'
-      case 'project-a':
-        return 'bg-blue-500'
-      case 'project-b':
-        return 'bg-emerald-500'
-      default:
-        return 'bg-transparent'
-    }
+    const config = getActivityCodeConfig(status)
+    return status === 'available' ? 'bg-transparent' : config.color
   }
   
   const renderCellContent = () => {
@@ -51,9 +49,10 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
     
     if (hasFullDayAssignment) {
       const assignment = assignments.find(a => a.timeSlot === 'full-day')!
+      const config = getActivityCodeConfig(assignment.status)
       return (
         <div className={`h-full w-full rounded text-white text-xs font-medium flex items-center justify-center ${getStatusColor(assignment.status)}`}>
-          {statusConfig[assignment.status].short}
+          {config.shortLabel}
         </div>
       )
     }
@@ -64,12 +63,12 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
         <div className={`flex-1 text-white text-[10px] font-medium flex items-center justify-center ${
           morningAssignment ? getStatusColor(morningAssignment.status) : 'bg-transparent border-b border-gray-300'
         }`}>
-          {morningAssignment ? statusConfig[morningAssignment.status].short : ''}
+          {morningAssignment ? getActivityCodeConfig(morningAssignment.status).shortLabel : ''}
         </div>
         <div className={`flex-1 text-white text-[10px] font-medium flex items-center justify-center ${
           afternoonAssignment ? getStatusColor(afternoonAssignment.status) : 'bg-transparent'
         }`}>
-          {afternoonAssignment ? statusConfig[afternoonAssignment.status].short : ''}
+          {afternoonAssignment ? getActivityCodeConfig(afternoonAssignment.status).shortLabel : ''}
         </div>
       </div>
     )
@@ -99,19 +98,19 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
         <DropdownMenuSeparator />
         
         <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Full Day</div>
-        {Object.entries(statusConfig).filter(([key]) => key !== 'available').map(([key, { label }]) => {
-          const statusKey = key as Assignment['status']
+        {activeActivityCodes.map(code => {
+          const statusKey = code.id as Assignment['status']
           return (
             <DropdownMenuItem
-              key={`full-${key}`}
+              key={`full-${code.id}`}
               onClick={() => {
                 onUpdate(statusKey, 'full-day')
                 setIsOpen(false)
               }}
               className="text-sm"
             >
-              <div className={`w-3 h-3 rounded mr-2 ${getStatusColor(statusKey)}`} />
-              {label}
+              <div className={`w-3 h-3 rounded mr-2 ${code.color}`} />
+              {code.label}
             </DropdownMenuItem>
           )
         })}
@@ -119,19 +118,19 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
         <DropdownMenuSeparator />
         
         <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Morning</div>
-        {Object.entries(statusConfig).filter(([key]) => key !== 'available').map(([key, { label }]) => {
-          const statusKey = key as Assignment['status']
+        {activeActivityCodes.map(code => {
+          const statusKey = code.id as Assignment['status']
           return (
             <DropdownMenuItem
-              key={`morning-${key}`}
+              key={`morning-${code.id}`}
               onClick={() => {
                 onUpdate(statusKey, 'morning')
                 setIsOpen(false)
               }}
               className="text-sm"
             >
-              <div className={`w-3 h-3 rounded mr-2 ${getStatusColor(statusKey)}`} />
-              AM - {label}
+              <div className={`w-3 h-3 rounded mr-2 ${code.color}`} />
+              AM - {code.label}
             </DropdownMenuItem>
           )
         })}
@@ -139,19 +138,19 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
         <DropdownMenuSeparator />
         
         <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Afternoon</div>
-        {Object.entries(statusConfig).filter(([key]) => key !== 'available').map(([key, { label }]) => {
-          const statusKey = key as Assignment['status']
+        {activeActivityCodes.map(code => {
+          const statusKey = code.id as Assignment['status']
           return (
             <DropdownMenuItem
-              key={`afternoon-${key}`}
+              key={`afternoon-${code.id}`}
               onClick={() => {
                 onUpdate(statusKey, 'afternoon')
                 setIsOpen(false)
               }}
               className="text-sm"
             >
-              <div className={`w-3 h-3 rounded mr-2 ${getStatusColor(statusKey)}`} />
-              PM - {label}
+              <div className={`w-3 h-3 rounded mr-2 ${code.color}`} />
+              PM - {code.label}
             </DropdownMenuItem>
           )
         })}

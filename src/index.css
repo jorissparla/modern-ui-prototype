@@ -35,6 +35,12 @@
   --status-holiday: oklch(0.75 0.10 300);
   --status-project-a: oklch(0.60 0.20 220);
   --status-project-b: oklch(0.60 0.20 140);
+  --status-meeting: oklch(0.70 0.20 25);
+  --status-training: oklch(0.65 0.20 260);
+  --status-support: oklch(0.65 0.20 20);
+  --status-research: oklch(0.60 0.20 180);
+  --status-vacation: oklch(0.70 0.20 320);
+  --status-sick: oklch(0.55 0.05 0);
 }
 
 @theme {
@@ -92,5 +98,35 @@
 
 .status-project-b {
   background-color: var(--status-project-b);
+  color: white;
+}
+
+.status-meeting {
+  background-color: var(--status-meeting);
+  color: white;
+}
+
+.status-training {
+  background-color: var(--status-training);
+  color: white;
+}
+
+.status-support {
+  background-color: var(--status-support);
+  color: white;
+}
+
+.status-research {
+  background-color: var(--status-research);
+  color: white;
+}
+
+.status-vacation {
+  background-color: var(--status-vacation);
+  color: white;
+}
+
+.status-sick {
+  background-color: var(--status-sick);
   color: white;
 }
