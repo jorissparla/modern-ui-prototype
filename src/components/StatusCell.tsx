@@ -45,7 +45,7 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
   const renderCellContent = () => {
     if (isAvailable) {
       return (
-        <div className={`h-full w-full rounded border-2 border-dashed border-gray-300 ${isWeekend ? 'bg-gray-100' : 'bg-white'} hover:border-gray-400 transition-colors`} />
+        <div className={`h-full w-full rounded border-2 border-solid border-gray-300 ${isWeekend ? 'bg-gray-100' : 'bg-white'} hover:border-gray-400 transition-colors`} />
       )
     }
     
