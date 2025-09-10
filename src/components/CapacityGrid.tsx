@@ -6,11 +6,11 @@ import { StatusCell } from './StatusCell'
 interface CapacityGridProps {
   members: TeamMember[]
   currentDate: Date
-  getAssignment: (memberId: string, date: string) => Assignment | undefined
-  updateAssignment: (memberId: string, date: string, status: Assignment['status']) => void
+  getAssignments: (memberId: string, date: string) => Assignment[]
+  updateAssignment: (memberId: string, date: string, status: Assignment['status'], timeSlot?: Assignment['timeSlot']) => void
 }
 
-export function CapacityGrid({ members, currentDate, getAssignment, updateAssignment }: CapacityGridProps) {
+export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment }: CapacityGridProps) {
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -39,11 +39,12 @@ export function CapacityGrid({ members, currentDate, getAssignment, updateAssign
       <div className="mb-4">
         <h3 className="font-semibold mb-2">Capacity Grid - {monthName}</h3>
         <div className="flex gap-2 flex-wrap">
-          <Badge className="bg-green-500 text-white text-xs">Available</Badge>
+          <Badge variant="outline" className="text-xs">Available (Blank)</Badge>
           <Badge className="bg-yellow-500 text-white text-xs">Busy</Badge>
           <Badge className="bg-purple-500 text-white text-xs">Holiday</Badge>
           <Badge className="bg-blue-500 text-white text-xs">Project A</Badge>
           <Badge className="bg-emerald-500 text-white text-xs">Project B</Badge>
+          <div className="text-xs text-muted-foreground ml-2">Split cells: Morning (top) / Afternoon (bottom)</div>
         </div>
       </div>
       
@@ -74,13 +75,13 @@ export function CapacityGrid({ members, currentDate, getAssignment, updateAssign
               </div>
               
               {days.map((day) => {
-                const assignment = getAssignment(member.id, day.dateString)
+                const assignments = getAssignments(member.id, day.dateString)
                 return (
                   <StatusCell
                     key={`${member.id}-${day.day}`}
-                    status={assignment?.status || 'available'}
+                    assignments={assignments}
                     isWeekend={day.isWeekend}
-                    onClick={(newStatus) => updateAssignment(member.id, day.dateString, newStatus)}
+                    onUpdate={(status, timeSlot) => updateAssignment(member.id, day.dateString, status, timeSlot)}
                   />
                 )
               })}

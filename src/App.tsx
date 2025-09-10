@@ -20,6 +20,7 @@ export interface Assignment {
   memberId: string
   date: string
   status: 'available' | 'busy' | 'holiday' | 'project-a' | 'project-b'
+  timeSlot?: 'morning' | 'afternoon' | 'full-day'
   project?: string
 }
 
@@ -73,23 +74,42 @@ function App() {
     setTeamMembers(current => [...current, newMember])
   }
 
-  const updateAssignment = (memberId: string, date: string, status: Assignment['status']) => {
+  const updateAssignment = (memberId: string, date: string, status: Assignment['status'], timeSlot: Assignment['timeSlot'] = 'full-day') => {
     setAssignments(current => {
-      const existing = current.find(a => a.memberId === memberId && a.date === date)
+      // If setting to available, remove all assignments for this date
+      if (status === 'available') {
+        return current.filter(a => !(a.memberId === memberId && a.date === date))
+      }
+      
+      // For full-day assignments, replace any existing assignments
+      if (timeSlot === 'full-day') {
+        const filtered = current.filter(a => !(a.memberId === memberId && a.date === date))
+        return [...filtered, { memberId, date, status, timeSlot }]
+      }
+      
+      // For time-specific assignments, check if there's a conflicting assignment
+      const existing = current.find(a => 
+        a.memberId === memberId && 
+        a.date === date && 
+        (a.timeSlot === timeSlot || a.timeSlot === 'full-day')
+      )
+      
       if (existing) {
+        // Update existing assignment
         return current.map(a => 
-          a.memberId === memberId && a.date === date 
+          a.memberId === memberId && a.date === date && a.timeSlot === timeSlot
             ? { ...a, status }
             : a
         )
       } else {
-        return [...current, { memberId, date, status }]
+        // Add new assignment
+        return [...current, { memberId, date, status, timeSlot }]
       }
     })
   }
 
-  const getAssignment = (memberId: string, date: string): Assignment | undefined => {
-    return assignments.find(a => a.memberId === memberId && a.date === date)
+  const getAssignments = (memberId: string, date: string): Assignment[] => {
+    return assignments.filter(a => a.memberId === memberId && a.date === date)
   }
 
   return (
@@ -167,7 +187,7 @@ function App() {
             <CapacityGrid
               members={teamMembers}
               currentDate={currentDate}
-              getAssignment={getAssignment}
+              getAssignments={getAssignments}
               updateAssignment={updateAssignment}
             />
           </div>
