@@ -95,19 +95,19 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
                 <div className="text-xs text-muted-foreground truncate">{member.role}</div>
               </div>
               
-              <div className="w-32 p-1.5 bg-card border rounded flex flex-col justify-center flex-shrink-0">
-                <div className="text-[10px] space-y-0.5">
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">B:</span>
-                    <span className="font-medium text-xs">{member.load.backlog}</span>
+              <div className="w-32 p-1.5 bg-card border rounded flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-2 text-[10px]">
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-muted-foreground font-medium">B</span>
+                    <span className="font-semibold text-xs px-1 py-0.5 bg-blue-100 text-blue-700 rounded">{member.load.backlog}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">A:</span>
-                    <span className="font-medium text-xs">{member.load.awaitingCustomer}</span>
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-muted-foreground font-medium">A</span>
+                    <span className="font-semibold text-xs px-1 py-0.5 bg-amber-100 text-amber-700 rounded">{member.load.awaitingCustomer}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground">R:</span>
-                    <span className="font-medium text-xs">{member.load.researching}</span>
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-muted-foreground font-medium">R</span>
+                    <span className="font-semibold text-xs px-1 py-0.5 bg-purple-100 text-purple-700 rounded">{member.load.researching}</span>
                   </div>
                 </div>
               </div>
