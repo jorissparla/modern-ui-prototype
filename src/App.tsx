@@ -1,5 +1,5 @@
 import { useKV } from '@github/spark/hooks'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -24,21 +24,29 @@ export interface Assignment {
 }
 
 function App() {
-  const [teamMembers, setTeamMembers] = useKV<TeamMember[]>('team-members', [
-    { id: '1', name: 'Sarah Chen', role: 'Frontend Developer', info: 'React specialist' },
-    { id: '2', name: 'Marcus Johnson', role: 'Backend Developer', info: 'Node.js expert' },
-    { id: '3', name: 'Elena Rodriguez', role: 'UX Designer', info: 'Design systems' },
-    { id: '4', name: 'David Kim', role: 'DevOps Engineer', info: 'AWS & Docker' },
-    { id: '5', name: 'Priya Sharma', role: 'Product Manager', info: 'Agile methodologies' },
-    { id: '6', name: 'Alex Thompson', role: 'Full Stack Developer', info: 'Python & React' },
-    { id: '7', name: 'Nina Petrov', role: 'QA Engineer', info: 'Automation testing' },
-    { id: '8', name: 'James Wilson', role: 'Data Scientist', info: 'ML & Analytics' },
-    { id: '9', name: 'Zoe Martinez', role: 'Mobile Developer', info: 'React Native' },
-    { id: '10', name: 'Ryan O\'Connor', role: 'Tech Lead', info: 'Architecture & mentoring' }
-  ])
+  const [teamMembers, setTeamMembers] = useKV<TeamMember[]>('team-members', [])
   const [assignments, setAssignments] = useKV<Assignment[]>('assignments', [])
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
+
+  // Initialize with default team members if empty
+  useEffect(() => {
+    if (teamMembers.length === 0) {
+      const defaultMembers: TeamMember[] = [
+        { id: '1', name: 'Sarah Chen', role: 'Frontend Developer', info: 'React specialist' },
+        { id: '2', name: 'Marcus Johnson', role: 'Backend Developer', info: 'Node.js expert' },
+        { id: '3', name: 'Elena Rodriguez', role: 'UX Designer', info: 'Design systems' },
+        { id: '4', name: 'David Kim', role: 'DevOps Engineer', info: 'AWS & Docker' },
+        { id: '5', name: 'Priya Sharma', role: 'Product Manager', info: 'Agile methodologies' },
+        { id: '6', name: 'Alex Thompson', role: 'Full Stack Developer', info: 'Python & React' },
+        { id: '7', name: 'Nina Petrov', role: 'QA Engineer', info: 'Automation testing' },
+        { id: '8', name: 'James Wilson', role: 'Data Scientist', info: 'ML & Analytics' },
+        { id: '9', name: 'Zoe Martinez', role: 'Mobile Developer', info: 'React Native' },
+        { id: '10', name: 'Ryan O\'Connor', role: 'Tech Lead', info: 'Architecture & mentoring' }
+      ]
+      setTeamMembers(defaultMembers)
+    }
+  }, [])
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
