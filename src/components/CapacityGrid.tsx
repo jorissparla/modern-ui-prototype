@@ -89,25 +89,25 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
 
           {/* Member Rows */}
           {members.map((member) => (
-            <div key={member.id} className="flex gap-1 mb-1">
-              <div className="w-48 p-2 bg-card border rounded flex flex-col justify-center flex-shrink-0">
+            <div key={member.id} className="flex gap-1 mb-0.5">
+              <div className="w-48 p-1.5 bg-card border rounded flex flex-col justify-center flex-shrink-0">
                 <div className="font-medium text-sm truncate">{member.name}</div>
                 <div className="text-xs text-muted-foreground truncate">{member.role}</div>
               </div>
               
-              <div className="w-32 p-2 bg-card border rounded flex flex-col justify-center flex-shrink-0">
-                <div className="text-xs space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Backlog:</span>
-                    <span className="font-medium">{member.load.backlog}</span>
+              <div className="w-32 p-1.5 bg-card border rounded flex flex-col justify-center flex-shrink-0">
+                <div className="text-[10px] space-y-0.5">
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">B:</span>
+                    <span className="font-medium text-xs">{member.load.backlog}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Awaiting:</span>
-                    <span className="font-medium">{member.load.awaitingCustomer}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">A:</span>
+                    <span className="font-medium text-xs">{member.load.awaitingCustomer}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Research:</span>
-                    <span className="font-medium">{member.load.researching}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">R:</span>
+                    <span className="font-medium text-xs">{member.load.researching}</span>
                   </div>
                 </div>
               </div>

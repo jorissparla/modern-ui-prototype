@@ -79,7 +79,7 @@ export function StatusCell({ assignments, isWeekend, onUpdate }: StatusCellProps
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <button 
-          className="h-10 w-10 p-0.5 hover:ring-2 hover:ring-ring hover:ring-offset-1 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all"
+          className="h-8 w-10 p-0.5 hover:ring-2 hover:ring-ring hover:ring-offset-1 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 transition-all"
         >
           {renderCellContent()}
         </button>
