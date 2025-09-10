@@ -39,23 +39,23 @@ export function CapacityGrid({ members, currentDate, getAssignment, updateAssign
       <div className="mb-4">
         <h3 className="font-semibold mb-2">Capacity Grid - {monthName}</h3>
         <div className="flex gap-2 flex-wrap">
-          <Badge className="status-available text-xs">Available</Badge>
-          <Badge className="status-busy text-xs">Busy</Badge>
-          <Badge className="status-holiday text-xs">Holiday</Badge>
-          <Badge className="status-project-a text-xs">Project A</Badge>
-          <Badge className="status-project-b text-xs">Project B</Badge>
+          <Badge className="bg-green-500 text-white text-xs">Available</Badge>
+          <Badge className="bg-yellow-500 text-white text-xs">Busy</Badge>
+          <Badge className="bg-purple-500 text-white text-xs">Holiday</Badge>
+          <Badge className="bg-blue-500 text-white text-xs">Project A</Badge>
+          <Badge className="bg-emerald-500 text-white text-xs">Project B</Badge>
         </div>
       </div>
       
       <div className="overflow-x-auto">
-        <div className="min-w-full">
+        <div className="min-w-max">
           {/* Header Row */}
-          <div className="grid grid-cols-[200px_repeat(31,40px)] gap-1 mb-2">
-            <div className="font-medium text-sm text-muted-foreground">Team Member</div>
+          <div className="flex gap-1 mb-2">
+            <div className="w-48 font-medium text-sm text-muted-foreground flex items-center">Team Member</div>
             {days.map((day) => (
               <div 
                 key={day.day} 
-                className={`text-xs text-center p-1 rounded ${
+                className={`w-10 text-xs text-center p-1 rounded flex-shrink-0 ${
                   day.isWeekend ? 'bg-muted text-muted-foreground' : 'text-foreground'
                 }`}
               >
@@ -67,8 +67,8 @@ export function CapacityGrid({ members, currentDate, getAssignment, updateAssign
 
           {/* Member Rows */}
           {members.map((member) => (
-            <div key={member.id} className="grid grid-cols-[200px_repeat(31,40px)] gap-1 mb-1">
-              <div className="p-2 bg-card border rounded flex flex-col justify-center">
+            <div key={member.id} className="flex gap-1 mb-1">
+              <div className="w-48 p-2 bg-card border rounded flex flex-col justify-center flex-shrink-0">
                 <div className="font-medium text-sm truncate">{member.name}</div>
                 <div className="text-xs text-muted-foreground truncate">{member.role}</div>
               </div>

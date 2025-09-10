@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Toaster } from '@/components/ui/sonner'
 import { ChevronLeft, ChevronRight, Plus, Users } from '@phosphor-icons/react'
 import { AddMemberDialog } from './components/AddMemberDialog'
 import { CapacityGrid } from './components/CapacityGrid'
@@ -181,6 +182,7 @@ function App() {
           onAddMember={addTeamMember}
         />
       </div>
+      <Toaster />
     </div>
   )
 }
