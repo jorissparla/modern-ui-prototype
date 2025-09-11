@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { MagnifyingGlass, X, User } from '@phosphor-icons/react'
+import { Select, SelectContent, SelectItem, S
+import type { TeamMember, Team } from '../A
+
+  open: boolean
+  skills: Skill[]
 import type { TeamMember, Team } from '../App'
 import type { Skill } from './SkillsMatrixDialog'
 
@@ -14,25 +14,25 @@ interface SkillSearchDialogProps {
   onOpenChange: (open: boolean) => void
   skills: Skill[]
   teamMembers: TeamMember[]
-  teams: Team[]
+  matchCount: n
   memberSkills: Record<string, Record<string, 'C' | 'E' | 'K'>>
-  onMemberSelect: (member: TeamMember) => void
+export function SkillSearchDialog({
 }
 
 interface MemberMatch {
-  member: TeamMember
+  memberSkills,
   matchingSkills: Array<{ skill: Skill; level: 'C' | 'E' | 'K' }>
   matchCount: number
 }
 
 export function SkillSearchDialog({
-  open,
+    
   onOpenChange,
-  skills,
+      ski
   teamMembers,
-  teams,
+    )
   memberSkills,
-  onMemberSelect
+  const matching
 }: SkillSearchDialogProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
@@ -44,9 +44,9 @@ export function SkillSearchDialog({
     const term = searchTerm.toLowerCase()
     return skills.filter(skill =>
       skill.name.toLowerCase().includes(term) ||
-      skill.code.toLowerCase().includes(term) ||
+          }
       skill.category.toLowerCase().includes(term)
-    )
+
   }, [skills, searchTerm])
 
   const matchingMembers = useMemo(() => {
@@ -62,70 +62,70 @@ export function SkillSearchDialog({
       const matchingSkills: Array<{ skill: Skill; level: 'C' | 'E' | 'K' }> = []
 
       selectedSkills.forEach(skillId => {
-        const memberLevel = skills[skillId]
-        if (memberLevel && (minLevel === 'any' || levelOrder[memberLevel] >= minLevelValue)) {
-          const skill = filteredSkills.find(s => s.id === skillId)
-          if (skill) {
-            matchingSkills.push({ skill, level: memberLevel })
-          }
-        }
-      })
+                  value={searchTerm}
+                  className="pl-10"
+                <MagnifyingGlass size={16} className="absolute lef
+            </div>
+            <div>
+           
+         
+        
 
-      if (matchingSkills.length > 0) {
-        matches.push({
-          member,
-          matchingSkills,
-          matchCount: matchingSkills.length
-        })
-      }
-    })
+                  <SelectItem value="E
+              </Select
 
-    return matches.sort((a, b) => b.matchCount - a.matchCount)
-  }, [teamMembers, memberSkills, selectedSkills, minLevel, filteredSkills])
+              Clear All
+          </div>
+          
+       
+      
 
-  const addSkill = (skillId: string) => {
-    if (!selectedSkills.includes(skillId)) {
-      setSelectedSkills(prev => [...prev, skillId])
-    }
-  }
+                    <Badge
+                      variant="secondary"
 
-  const removeSkill = (skillId: string) => {
-    setSelectedSkills(prev => prev.filter(id => id !== skillId))
-  }
+                      {skill.name}
+                    </Badge>
+                })}
+     
 
-  const clearAll = () => {
-    setSelectedSkills([])
-    setSearchTerm('')
-    setMinLevel('any')
-  }
 
-  const getLevelColor = (level: 'K' | 'C' | 'E') => {
-    switch (level) {
-      case 'K': return 'bg-gray-500'
-      case 'C': return 'bg-blue-500'
-      case 'E': return 'bg-green-500'
-      default: return 'bg-gray-400'
-    }
-  }
+              <h3 className="text-sm font-me
+                {filteredSkills.map(skill => (
+   
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MagnifyingGlass size={20} />
-            Find Team Members by Skills
-          </DialogTitle>
-        </DialogHeader>
+                    onClic
+                    <div 
+                     
+                      
+   
 
-        <div className="space-y-4">
-          {/* Search and Filters */}
-          <div className="flex gap-3 items-end">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-1 block">Search Skills</label>
-              <div className="relative">
-                <Input
-                  placeholder="Search by skill name, code, or category..."
+                ))}
+                  <d
+                  </div>
+              </div>
+
+            <div className="space-y
+     
+   
+
+          
+                    >
+                        <div className="flex justify-between items-start
+                      
+                            <div className="text-xs text-mu
+                          <div className=
+                            <span>{matc
+                        
+                       
+
+                            >
+                            </Badge>
+                        </div>
+                    </Card>
+                })}
+                  <div className="text-c
+                  </di
+                {selectedSkills.length === 0 && (
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -254,33 +254,32 @@ export function SkillSearchDialog({
                 )}
                 {selectedSkills.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
-                    Select skills to find matching members
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
 
-          {/* Legend */}
-          <div className="border-t pt-3">
-            <div className="flex items-center gap-4 text-xs">
-              <span className="font-medium">Skill Levels:</span>
-              <div className="flex items-center gap-1">
-                <Badge className="bg-gray-500 text-white text-xs">K</Badge>
-                <span>Knowledge</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Badge className="bg-blue-500 text-white text-xs">C</Badge>
-                <span>Competent</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Badge className="bg-green-500 text-white text-xs">E</Badge>
-                <span>Expert</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
