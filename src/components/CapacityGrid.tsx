@@ -14,9 +14,10 @@ interface CapacityGridProps {
   onToggleSort: () => void
   activityCodes: ActivityCode[]
   onMemberRightClick?: (member: TeamMember, event: React.MouseEvent) => void
+  memberSkills?: Record<string, Record<string, 'C' | 'E' | 'K'>>
 }
 
-export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort, activityCodes, onMemberRightClick }: CapacityGridProps) {
+export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort, activityCodes, onMemberRightClick, memberSkills }: CapacityGridProps) {
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -91,34 +92,45 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
           </div>
 
           {/* Fixed Member Rows */}
-          {members.map((member) => (
-            <div key={member.id} className="flex gap-1 mb-0.5 h-8">
-              <div 
-                className="w-48 h-8 px-2 bg-card border-y border-l rounded-l flex flex-col justify-center cursor-pointer hover:bg-muted/50"
-                onContextMenu={(e) => onMemberRightClick?.(member, e)}
-              >
-                <div className="font-medium text-sm truncate leading-tight">{member.name}</div>
-                <div className="text-xs text-muted-foreground truncate leading-none">{member.role}</div>
-              </div>
-              
-              <div className="w-32 h-8 px-2 bg-card border-y border-r rounded-r flex items-center justify-center">
-                <div className="flex items-center gap-2 text-[10px]">
-                  <div className="flex items-center gap-0.5">
-                    <span className="text-muted-foreground font-medium">B</span>
-                    <span className="font-semibold text-xs px-1 py-0.5 bg-blue-100 text-blue-700 rounded">{member.load.backlog}</span>
+          {members.map((member) => {
+            const memberSkillsCount = memberSkills ? Object.keys(memberSkills[member.id] || {}).length : 0
+            
+            return (
+              <div key={member.id} className="flex gap-1 mb-0.5 h-8">
+                <div 
+                  className="w-48 h-8 px-2 bg-card border-y border-l rounded-l flex items-center justify-between cursor-pointer hover:bg-muted/50"
+                  onContextMenu={(e) => onMemberRightClick?.(member, e)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm truncate leading-tight">{member.name}</div>
+                    <div className="text-xs text-muted-foreground truncate leading-none">{member.role}</div>
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    <span className="text-muted-foreground font-medium">A</span>
-                    <span className="font-semibold text-xs px-1 py-0.5 bg-amber-100 text-amber-700 rounded">{member.load.awaitingCustomer}</span>
-                  </div>
-                  <div className="flex items-center gap-0.5">
-                    <span className="text-muted-foreground font-medium">R</span>
-                    <span className="font-semibold text-xs px-1 py-0.5 bg-purple-100 text-purple-700 rounded">{member.load.researching}</span>
+                  {memberSkillsCount > 0 && (
+                    <Badge variant="outline" className="text-[10px] h-4 px-1 ml-1 bg-background">
+                      {memberSkillsCount} skills
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="w-32 h-8 px-2 bg-card border-y border-r rounded-r flex items-center justify-center">
+                  <div className="flex items-center gap-2 text-[10px]">
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-muted-foreground font-medium">B</span>
+                      <span className="font-semibold text-xs px-1 py-0.5 bg-blue-100 text-blue-700 rounded">{member.load.backlog}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-muted-foreground font-medium">A</span>
+                      <span className="font-semibold text-xs px-1 py-0.5 bg-amber-100 text-amber-700 rounded">{member.load.awaitingCustomer}</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-muted-foreground font-medium">R</span>
+                      <span className="font-semibold text-xs px-1 py-0.5 bg-purple-100 text-purple-700 rounded">{member.load.researching}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Scrollable Right Section */}

@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Toaster } from '@/components/ui/sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown, Settings, Palette } from '@phosphor-icons/react'
+import { CaretLeft, CaretRight, Plus, Users, ArrowUp, ArrowDown, Settings, Palette, MagnifyingGlass } from '@phosphor-icons/react'
 import { AddMemberDialog } from './components/AddMemberDialog'
 import { CapacityGrid } from './components/CapacityGrid'
 import { TeamMemberList } from './components/TeamMemberList'
 import { TeamManagementDialog } from './components/TeamManagementDialog'
 import { ActivityCodesDialog } from './components/ActivityCodesDialog'
 import { SkillsMatrixDialog, Skill } from './components/SkillsMatrixDialog'
+import { SkillFilterDialog } from './components/SkillFilterDialog'
 
 export interface TeamMember {
   id: string
@@ -62,6 +63,7 @@ function App() {
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false)
   const [isActivityCodesOpen, setIsActivityCodesOpen] = useState(false)
   const [isSkillsMatrixOpen, setIsSkillsMatrixOpen] = useState(false)
+  const [isSkillFilterOpen, setIsSkillFilterOpen] = useState(false)
   const [selectedMemberForSkills, setSelectedMemberForSkills] = useState<TeamMember | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
@@ -555,6 +557,18 @@ function App() {
     setIsSkillsMatrixOpen(true)
   }
 
+  const handleMemberSelectFromSkillFilter = (member: TeamMember) => {
+    // Switch to the member's team if it's different from currently selected
+    if (member.teamId !== selectedTeamId) {
+      setSelectedTeamId(member.teamId)
+    }
+    // Close the skill filter dialog
+    setIsSkillFilterOpen(false)
+    // Optionally, you could highlight the member or show their skills
+    setSelectedMemberForSkills(member)
+    setIsSkillsMatrixOpen(true)
+  }
+
   const getTeamSpecificSkills = (teamId: string): Skill[] => {
     if (!skills) return []
     
@@ -679,6 +693,14 @@ function App() {
               </Button>
               <Button 
                 variant="outline" 
+                onClick={() => setIsSkillFilterOpen(true)}
+                className="gap-2"
+              >
+                <MagnifyingGlass size={16} />
+                Find by Skills
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => setIsActivityCodesOpen(true)}
                 className="gap-2"
               >
@@ -779,6 +801,7 @@ function App() {
               onToggleSort={toggleSort}
               activityCodes={activityCodes || []}
               onMemberRightClick={handleMemberRightClick}
+              memberSkills={memberSkills}
             />
           </div>
         )}
@@ -816,6 +839,17 @@ function App() {
           skills={selectedMemberForSkills ? getTeamSpecificSkills(selectedMemberForSkills.teamId) : []}
           memberSkills={selectedMemberForSkills ? (memberSkills[selectedMemberForSkills.id] || {}) : {}}
           onUpdateMemberSkills={updateMemberSkills}
+        />
+
+        {/* Skill Filter Dialog */}
+        <SkillFilterDialog
+          open={isSkillFilterOpen}
+          onOpenChange={setIsSkillFilterOpen}
+          skills={skills || []}
+          teamMembers={teamMembers || []}
+          teams={teams || []}
+          memberSkills={memberSkills}
+          onMemberSelect={handleMemberSelectFromSkillFilter}
         />
       </div>
       <Toaster />
