@@ -159,10 +159,10 @@ function App() {
 
   // Initialize with some sample member skills if empty
   useEffect(() => {
-    if (memberSkills && Object.keys(memberSkills).length === 0 && teamMembers && teamMembers.length > 0) {
+    if ((!memberSkills || Object.keys(memberSkills).length === 0) && teamMembers && teamMembers.length > 0) {
       const sampleMemberSkills: Record<string, Record<string, 'C' | 'E' | 'K'>> = {
-        // Sample skills for Sarah Chen (Frontend)
-        '1': {
+        // Frontend Team Skills
+        '1': { // Sarah Chen
           'react': 'E',
           'typescript': 'E',
           'javascript': 'E',
@@ -172,8 +172,41 @@ function App() {
           'responsive': 'E',
           'accessibility': 'C'
         },
-        // Sample skills for Marcus Johnson (Backend)
-        '6': {
+        '2': { // Alex Thompson
+          'vue': 'E',
+          'typescript': 'E',
+          'javascript': 'E',
+          'html-css': 'E',
+          'sass': 'E',
+          'webpack': 'C',
+          'jest': 'C'
+        },
+        '3': { // Zoe Martinez
+          'react-native': 'E',
+          'react': 'E',
+          'typescript': 'C',
+          'javascript': 'E',
+          'responsive': 'E'
+        },
+        '4': { // Oliver Johnson
+          'angular': 'E',
+          'typescript': 'E',
+          'javascript': 'E',
+          'sass': 'E',
+          'html-css': 'E',
+          'cypress': 'C'
+        },
+        '5': { // Maya Patel
+          'react': 'C',
+          'html-css': 'E',
+          'tailwind': 'E',
+          'sass': 'C',
+          'responsive': 'E',
+          'accessibility': 'E'
+        },
+
+        // Backend Team Skills
+        '6': { // Marcus Johnson
           'nodejs': 'E',
           'express': 'E',
           'postgresql': 'E',
@@ -182,8 +215,40 @@ function App() {
           'microservices': 'C',
           'mongodb': 'C'
         },
-        // Sample skills for Priya Sharma (Design)
-        '11': {
+        '7': { // Elena Rodriguez
+          'python': 'E',
+          'django': 'E',
+          'fastapi': 'C',
+          'postgresql': 'C',
+          'rest-api': 'E',
+          'auth': 'C'
+        },
+        '8': { // David Kim
+          'java': 'E',
+          'spring': 'E',
+          'postgresql': 'E',
+          'rest-api': 'E',
+          'microservices': 'E',
+          'auth': 'C'
+        },
+        '9': { // James Wilson
+          'postgresql': 'E',
+          'mongodb': 'E',
+          'redis': 'C',
+          'python': 'C',
+          'nodejs': 'C'
+        },
+        '10': { // Sofia Andersson
+          'graphql': 'E',
+          'rest-api': 'E',
+          'nodejs': 'E',
+          'express': 'E',
+          'postgresql': 'C',
+          'auth': 'E'
+        },
+
+        // Design Team Skills
+        '11': { // Priya Sharma
           'figma': 'E',
           'user-research': 'E',
           'wireframing': 'E',
@@ -192,8 +257,31 @@ function App() {
           'photoshop': 'C',
           'usability-testing': 'C'
         },
-        // Sample skills for Ryan O'Connor (DevOps)
-        '15': {
+        '12': { // Nina Petrov
+          'figma': 'E',
+          'sketch': 'C',
+          'design-systems': 'E',
+          'wireframing': 'C',
+          'interaction-design': 'C',
+          'brand-design': 'C'
+        },
+        '13': { // Lucas Brown
+          'figma': 'E',
+          'wireframing': 'E',
+          'user-research': 'C',
+          'usability-testing': 'E',
+          'interaction-design': 'E'
+        },
+        '14': { // Isabella Garcia
+          'photoshop': 'E',
+          'illustrator': 'E',
+          'brand-design': 'E',
+          'figma': 'C',
+          'motion-design': 'C'
+        },
+
+        // DevOps Team Skills
+        '15': { // Ryan O'Connor
           'aws': 'E',
           'kubernetes': 'E',
           'docker': 'E',
@@ -202,11 +290,36 @@ function App() {
           'security-scanning': 'E',
           'incident-response': 'E',
           'azure': 'C'
+        },
+        '16': { // Emma Thompson
+          'aws': 'C',
+          'kubernetes': 'E',
+          'docker': 'E',
+          'prometheus': 'E',
+          'grafana': 'E',
+          'incident-response': 'E',
+          'security-scanning': 'C'
+        },
+        '17': { // Carlos Mendez
+          'azure': 'E',
+          'terraform': 'E',
+          'kubernetes': 'C',
+          'docker': 'E',
+          'ansible': 'C',
+          'jenkins': 'C'
+        },
+        '18': { // Aisha Ibrahim
+          'security-scanning': 'E',
+          'github-actions': 'E',
+          'aws': 'C',
+          'kubernetes': 'C',
+          'docker': 'E',
+          'incident-response': 'C'
         }
       }
       setMemberSkills(sampleMemberSkills)
     }
-  }, [teamMembers, memberSkills])
+  }, [teamMembers])
   // Initialize with default teams and members if empty
   useEffect(() => {
     if (!teams || teams.length === 0) {
