@@ -13,9 +13,10 @@ interface CapacityGridProps {
   sortDirection: 'asc' | 'desc'
   onToggleSort: () => void
   activityCodes: ActivityCode[]
+  onMemberRightClick?: (member: TeamMember, event: React.MouseEvent) => void
 }
 
-export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort, activityCodes }: CapacityGridProps) {
+export function CapacityGrid({ members, currentDate, getAssignments, updateAssignment, sortDirection, onToggleSort, activityCodes, onMemberRightClick }: CapacityGridProps) {
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -52,7 +53,7 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
     <Card className="p-4">
       <div className="mb-4">
         <h3 className="font-semibold mb-2">Capacity Grid - {monthName}</h3>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mb-2">
           <Badge variant="outline" className="text-xs">Available (Blank)</Badge>
           {activeActivityCodes.map(code => (
             <Badge 
@@ -62,7 +63,11 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
               {code.label} ({code.shortLabel})
             </Badge>
           ))}
-          <div className="text-xs text-muted-foreground ml-2">Split cells: Morning (top) / Afternoon (bottom)</div>
+        </div>
+        <div className="flex gap-4 text-xs text-muted-foreground">
+          <span>Split cells: Morning (top) / Afternoon (bottom)</span>
+          <span>•</span>
+          <span>Right-click team member names to view skills matrix</span>
         </div>
       </div>
       
@@ -88,7 +93,10 @@ export function CapacityGrid({ members, currentDate, getAssignments, updateAssig
           {/* Fixed Member Rows */}
           {members.map((member) => (
             <div key={member.id} className="flex gap-1 mb-0.5 h-8">
-              <div className="w-48 h-8 px-2 bg-card border-y border-l rounded-l flex flex-col justify-center">
+              <div 
+                className="w-48 h-8 px-2 bg-card border-y border-l rounded-l flex flex-col justify-center cursor-pointer hover:bg-muted/50"
+                onContextMenu={(e) => onMemberRightClick?.(member, e)}
+              >
                 <div className="font-medium text-sm truncate leading-tight">{member.name}</div>
                 <div className="text-xs text-muted-foreground truncate leading-none">{member.role}</div>
               </div>

@@ -11,6 +11,7 @@ import { CapacityGrid } from './components/CapacityGrid'
 import { TeamMemberList } from './components/TeamMemberList'
 import { TeamManagementDialog } from './components/TeamManagementDialog'
 import { ActivityCodesDialog } from './components/ActivityCodesDialog'
+import { SkillsMatrixDialog, Skill } from './components/SkillsMatrixDialog'
 
 export interface TeamMember {
   id: string
@@ -54,10 +55,14 @@ function App() {
   const [teamMembers, setTeamMembers] = useKV<TeamMember[]>('team-members', [])
   const [assignments, setAssignments] = useKV<Assignment[]>('assignments', [])
   const [activityCodes, setActivityCodes] = useKV<ActivityCode[]>('activity-codes', [])
+  const [skills, setSkills] = useKV<Skill[]>('skills', [])
+  const [memberSkills, setMemberSkills] = useKV<Record<string, Record<string, 'C' | 'E' | 'K'>>>('member-skills', {})
   const [currentDate, setCurrentDate] = useState(new Date())
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false)
   const [isActivityCodesOpen, setIsActivityCodesOpen] = useState(false)
+  const [isSkillsMatrixOpen, setIsSkillsMatrixOpen] = useState(false)
+  const [selectedMemberForSkills, setSelectedMemberForSkills] = useState<TeamMember | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
 
@@ -79,6 +84,129 @@ function App() {
       setActivityCodes(defaultActivityCodes)
     }
   }, [])
+  
+  // Initialize with default skills if empty
+  useEffect(() => {
+    if (!skills || skills.length === 0) {
+      const defaultSkills: Skill[] = [
+        // Frontend Team Skills
+        { id: 'react', name: 'React Framework', code: 'REACT', category: 'Frontend Frameworks', level: 'E' },
+        { id: 'vue', name: 'Vue.js Framework', code: 'VUE', category: 'Frontend Frameworks', level: 'C' },
+        { id: 'angular', name: 'Angular Framework', code: 'ANG', category: 'Frontend Frameworks', level: 'C' },
+        { id: 'typescript', name: 'TypeScript', code: 'TS', category: 'Programming Languages', level: 'E' },
+        { id: 'javascript', name: 'JavaScript ES6+', code: 'JS', category: 'Programming Languages', level: 'E' },
+        { id: 'html-css', name: 'HTML5 & CSS3', code: 'HTML', category: 'Web Technologies', level: 'E' },
+        { id: 'sass', name: 'SASS/SCSS', code: 'SASS', category: 'Styling', level: 'C' },
+        { id: 'tailwind', name: 'Tailwind CSS', code: 'TW', category: 'Styling', level: 'E' },
+        { id: 'webpack', name: 'Webpack Bundling', code: 'WP', category: 'Build Tools', level: 'C' },
+        { id: 'vite', name: 'Vite Build Tool', code: 'VITE', category: 'Build Tools', level: 'E' },
+        { id: 'jest', name: 'Jest Testing', code: 'JEST', category: 'Testing', level: 'C' },
+        { id: 'cypress', name: 'Cypress E2E Testing', code: 'CYP', category: 'Testing', level: 'C' },
+        { id: 'responsive', name: 'Responsive Design', code: 'RWD', category: 'UI/UX', level: 'E' },
+        { id: 'accessibility', name: 'Web Accessibility (WCAG)', code: 'A11Y', category: 'UI/UX', level: 'C' },
+        { id: 'react-native', name: 'React Native', code: 'RN', category: 'Mobile Development', level: 'C' },
+        
+        // Backend Team Skills
+        { id: 'nodejs', name: 'Node.js Runtime', code: 'NODE', category: 'Backend Runtime', level: 'E' },
+        { id: 'python', name: 'Python Programming', code: 'PY', category: 'Programming Languages', level: 'E' },
+        { id: 'java', name: 'Java Programming', code: 'JAVA', category: 'Programming Languages', level: 'E' },
+        { id: 'spring', name: 'Spring Boot Framework', code: 'SPRING', category: 'Backend Frameworks', level: 'E' },
+        { id: 'django', name: 'Django Framework', code: 'DJG', category: 'Backend Frameworks', level: 'C' },
+        { id: 'fastapi', name: 'FastAPI Framework', code: 'FAPI', category: 'Backend Frameworks', level: 'C' },
+        { id: 'express', name: 'Express.js Framework', code: 'EXP', category: 'Backend Frameworks', level: 'E' },
+        { id: 'postgresql', name: 'PostgreSQL Database', code: 'PSQL', category: 'Databases', level: 'E' },
+        { id: 'mongodb', name: 'MongoDB Database', code: 'MONGO', category: 'Databases', level: 'C' },
+        { id: 'redis', name: 'Redis Cache', code: 'REDIS', category: 'Databases', level: 'C' },
+        { id: 'graphql', name: 'GraphQL API', code: 'GQL', category: 'API Technologies', level: 'C' },
+        { id: 'rest-api', name: 'REST API Design', code: 'REST', category: 'API Technologies', level: 'E' },
+        { id: 'microservices', name: 'Microservices Architecture', code: 'MSA', category: 'Architecture', level: 'C' },
+        { id: 'auth', name: 'Authentication & Authorization', code: 'AUTH', category: 'Security', level: 'E' },
+        { id: 'oauth', name: 'OAuth 2.0 / JWT', code: 'OAUTH', category: 'Security', level: 'C' },
+        
+        // Design Team Skills
+        { id: 'figma', name: 'Figma Design Tool', code: 'FIG', category: 'Design Tools', level: 'E' },
+        { id: 'sketch', name: 'Sketch Design Tool', code: 'SKT', category: 'Design Tools', level: 'C' },
+        { id: 'adobe-xd', name: 'Adobe XD', code: 'XD', category: 'Design Tools', level: 'C' },
+        { id: 'photoshop', name: 'Adobe Photoshop', code: 'PS', category: 'Graphics Tools', level: 'E' },
+        { id: 'illustrator', name: 'Adobe Illustrator', code: 'AI', category: 'Graphics Tools', level: 'C' },
+        { id: 'user-research', name: 'User Research Methods', code: 'UR', category: 'UX Research', level: 'E' },
+        { id: 'usability-testing', name: 'Usability Testing', code: 'UT', category: 'UX Research', level: 'C' },
+        { id: 'wireframing', name: 'Wireframing & Prototyping', code: 'WIRE', category: 'UX Design', level: 'E' },
+        { id: 'design-systems', name: 'Design Systems', code: 'DS', category: 'Design Strategy', level: 'E' },
+        { id: 'brand-design', name: 'Brand & Visual Identity', code: 'BRAND', category: 'Visual Design', level: 'C' },
+        { id: 'interaction-design', name: 'Interaction Design', code: 'IXD', category: 'UX Design', level: 'E' },
+        { id: 'motion-design', name: 'Motion & Animation Design', code: 'MOTION', category: 'Visual Design', level: 'C' },
+        
+        // DevOps Team Skills
+        { id: 'aws', name: 'Amazon Web Services', code: 'AWS', category: 'Cloud Platforms', level: 'E' },
+        { id: 'azure', name: 'Microsoft Azure', code: 'AZURE', category: 'Cloud Platforms', level: 'C' },
+        { id: 'gcp', name: 'Google Cloud Platform', code: 'GCP', category: 'Cloud Platforms', level: 'C' },
+        { id: 'kubernetes', name: 'Kubernetes Orchestration', code: 'K8S', category: 'Container Orchestration', level: 'E' },
+        { id: 'docker', name: 'Docker Containerization', code: 'DOCK', category: 'Containerization', level: 'E' },
+        { id: 'terraform', name: 'Terraform IaC', code: 'TF', category: 'Infrastructure as Code', level: 'E' },
+        { id: 'ansible', name: 'Ansible Automation', code: 'ANS', category: 'Configuration Management', level: 'C' },
+        { id: 'jenkins', name: 'Jenkins CI/CD', code: 'JEN', category: 'CI/CD Tools', level: 'C' },
+        { id: 'github-actions', name: 'GitHub Actions', code: 'GHA', category: 'CI/CD Tools', level: 'E' },
+        { id: 'prometheus', name: 'Prometheus Monitoring', code: 'PROM', category: 'Monitoring', level: 'C' },
+        { id: 'grafana', name: 'Grafana Dashboards', code: 'GRAF', category: 'Monitoring', level: 'C' },
+        { id: 'elk', name: 'ELK Stack (Elasticsearch, Logstash, Kibana)', code: 'ELK', category: 'Logging', level: 'C' },
+        { id: 'security-scanning', name: 'Security Vulnerability Scanning', code: 'SEC', category: 'Security', level: 'E' },
+        { id: 'incident-response', name: 'Incident Response & Management', code: 'IR', category: 'Operations', level: 'E' }
+      ]
+      setSkills(defaultSkills)
+    }
+  }, [])
+
+  // Initialize with some sample member skills if empty
+  useEffect(() => {
+    if (memberSkills && Object.keys(memberSkills).length === 0 && teamMembers && teamMembers.length > 0) {
+      const sampleMemberSkills: Record<string, Record<string, 'C' | 'E' | 'K'>> = {
+        // Sample skills for Sarah Chen (Frontend)
+        '1': {
+          'react': 'E',
+          'typescript': 'E',
+          'javascript': 'E',
+          'html-css': 'E',
+          'tailwind': 'C',
+          'vite': 'E',
+          'responsive': 'E',
+          'accessibility': 'C'
+        },
+        // Sample skills for Marcus Johnson (Backend)
+        '6': {
+          'nodejs': 'E',
+          'express': 'E',
+          'postgresql': 'E',
+          'rest-api': 'E',
+          'auth': 'E',
+          'microservices': 'C',
+          'mongodb': 'C'
+        },
+        // Sample skills for Priya Sharma (Design)
+        '11': {
+          'figma': 'E',
+          'user-research': 'E',
+          'wireframing': 'E',
+          'design-systems': 'E',
+          'interaction-design': 'E',
+          'photoshop': 'C',
+          'usability-testing': 'C'
+        },
+        // Sample skills for Ryan O'Connor (DevOps)
+        '15': {
+          'aws': 'E',
+          'kubernetes': 'E',
+          'docker': 'E',
+          'terraform': 'E',
+          'github-actions': 'E',
+          'security-scanning': 'E',
+          'incident-response': 'E',
+          'azure': 'C'
+        }
+      }
+      setMemberSkills(sampleMemberSkills)
+    }
+  }, [teamMembers, memberSkills])
   // Initialize with default teams and members if empty
   useEffect(() => {
     if (!teams || teams.length === 0) {
@@ -301,6 +429,47 @@ function App() {
     setActivityCodes(codes)
   }
 
+  const updateMemberSkills = (memberId: string, skills: Record<string, 'C' | 'E' | 'K'>) => {
+    setMemberSkills(current => ({
+      ...current,
+      [memberId]: skills
+    }))
+  }
+
+  const handleMemberRightClick = (member: TeamMember, event: React.MouseEvent) => {
+    event.preventDefault()
+    setSelectedMemberForSkills(member)
+    setIsSkillsMatrixOpen(true)
+  }
+
+  const getTeamSpecificSkills = (teamId: string): Skill[] => {
+    if (!skills) return []
+    
+    // Filter skills based on team type
+    const teamSkillCategories: Record<string, string[]> = {
+      'frontend': [
+        'Frontend Frameworks', 'Programming Languages', 'Web Technologies', 
+        'Styling', 'Build Tools', 'Testing', 'UI/UX', 'Mobile Development'
+      ],
+      'backend': [
+        'Backend Runtime', 'Programming Languages', 'Backend Frameworks', 
+        'Databases', 'API Technologies', 'Architecture', 'Security'
+      ],
+      'design': [
+        'Design Tools', 'Graphics Tools', 'UX Research', 'UX Design', 
+        'Design Strategy', 'Visual Design'
+      ],
+      'devops': [
+        'Cloud Platforms', 'Container Orchestration', 'Containerization', 
+        'Infrastructure as Code', 'Configuration Management', 'CI/CD Tools', 
+        'Monitoring', 'Logging', 'Security', 'Operations'
+      ]
+    }
+
+    const relevantCategories = teamSkillCategories[teamId] || []
+    return skills.filter(skill => relevantCategories.includes(skill.category))
+  }
+
   // Filter to show only active teams in the selector
   const activeTeams = teams?.filter(team => team.isActive) || []
   
@@ -362,7 +531,7 @@ function App() {
             <Users size={32} className="text-primary" />
             <div>
               <h1 className="text-2xl font-bold text-foreground">Team Capacity Planner</h1>
-              <p className="text-muted-foreground">Manage team availability and project assignments</p>
+              <p className="text-muted-foreground">Manage team availability, project assignments, and skills</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -496,6 +665,7 @@ function App() {
               sortDirection={sortDirection}
               onToggleSort={toggleSort}
               activityCodes={activityCodes || []}
+              onMemberRightClick={handleMemberRightClick}
             />
           </div>
         )}
@@ -523,6 +693,16 @@ function App() {
           onOpenChange={setIsActivityCodesOpen}
           activityCodes={activityCodes || []}
           onUpdateActivityCodes={updateActivityCodes}
+        />
+
+        {/* Skills Matrix Dialog */}
+        <SkillsMatrixDialog
+          open={isSkillsMatrixOpen}
+          onOpenChange={setIsSkillsMatrixOpen}
+          member={selectedMemberForSkills}
+          skills={selectedMemberForSkills ? getTeamSpecificSkills(selectedMemberForSkills.teamId) : []}
+          memberSkills={selectedMemberForSkills ? (memberSkills[selectedMemberForSkills.id] || {}) : {}}
+          onUpdateMemberSkills={updateMemberSkills}
         />
       </div>
       <Toaster />
