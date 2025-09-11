@@ -12,7 +12,7 @@ import { TeamMemberList } from './components/TeamMemberList'
 import { TeamManagementDialog } from './components/TeamManagementDialog'
 import { ActivityCodesDialog } from './components/ActivityCodesDialog'
 import { SkillsMatrixDialog, Skill } from './components/SkillsMatrixDialog'
-import { SkillFilterDialog } from './components/SkillFilterDialog'
+import { SkillSearchDialog } from './components/SkillSearchDialog'
 
 export interface TeamMember {
   id: string
@@ -63,7 +63,7 @@ function App() {
   const [isTeamManagementOpen, setIsTeamManagementOpen] = useState(false)
   const [isActivityCodesOpen, setIsActivityCodesOpen] = useState(false)
   const [isSkillsMatrixOpen, setIsSkillsMatrixOpen] = useState(false)
-  const [isSkillFilterOpen, setIsSkillFilterOpen] = useState(false)
+  const [isSkillSearchOpen, setIsSkillSearchOpen] = useState(false)
   const [selectedMemberForSkills, setSelectedMemberForSkills] = useState<TeamMember | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [selectedTeamId, setSelectedTeamId] = useState<string>('')
@@ -562,8 +562,8 @@ function App() {
     if (member.teamId !== selectedTeamId) {
       setSelectedTeamId(member.teamId)
     }
-    // Close the skill filter dialog
-    setIsSkillFilterOpen(false)
+    // Close the skill search dialog
+    setIsSkillSearchOpen(false)
     // Optionally, you could highlight the member or show their skills
     setSelectedMemberForSkills(member)
     setIsSkillsMatrixOpen(true)
@@ -693,7 +693,7 @@ function App() {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => setIsSkillFilterOpen(true)}
+                onClick={() => setIsSkillSearchOpen(true)}
                 className="gap-2"
               >
                 <MagnifyingGlass size={16} />
@@ -841,10 +841,10 @@ function App() {
           onUpdateMemberSkills={updateMemberSkills}
         />
 
-        {/* Skill Filter Dialog */}
-        <SkillFilterDialog
-          open={isSkillFilterOpen}
-          onOpenChange={setIsSkillFilterOpen}
+        {/* Skill Search Dialog */}
+        <SkillSearchDialog
+          open={isSkillSearchOpen}
+          onOpenChange={setIsSkillSearchOpen}
           skills={skills || []}
           teamMembers={teamMembers || []}
           teams={teams || []}
