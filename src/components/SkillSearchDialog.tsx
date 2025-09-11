@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card } from '@/components/ui/card'
-import { Select, SelectContent, SelectItem, S
-import type { TeamMember, Team } from '../A
-
-  open: boolean
-  skills: Skill[]
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { MagnifyingGlass, X, User } from '@phosphor-icons/react'
 import type { TeamMember, Team } from '../App'
 import type { Skill } from './SkillsMatrixDialog'
 
@@ -14,25 +14,25 @@ interface SkillSearchDialogProps {
   onOpenChange: (open: boolean) => void
   skills: Skill[]
   teamMembers: TeamMember[]
-  matchCount: n
+  teams: Team[]
   memberSkills: Record<string, Record<string, 'C' | 'E' | 'K'>>
-export function SkillSearchDialog({
+  onMemberSelect: (member: TeamMember) => void
 }
 
 interface MemberMatch {
-  memberSkills,
+  member: TeamMember
   matchingSkills: Array<{ skill: Skill; level: 'C' | 'E' | 'K' }>
   matchCount: number
 }
 
 export function SkillSearchDialog({
-    
+  open,
   onOpenChange,
-      ski
+  skills,
   teamMembers,
-    )
+  teams,
   memberSkills,
-  const matching
+  onMemberSelect
 }: SkillSearchDialogProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSkills, setSelectedSkills] = useState<string[]>([])
@@ -44,9 +44,9 @@ export function SkillSearchDialog({
     const term = searchTerm.toLowerCase()
     return skills.filter(skill =>
       skill.name.toLowerCase().includes(term) ||
-          }
+      skill.code.toLowerCase().includes(term) ||
       skill.category.toLowerCase().includes(term)
-
+    )
   }, [skills, searchTerm])
 
   const matchingMembers = useMemo(() => {
@@ -58,80 +58,80 @@ export function SkillSearchDialog({
     const matches: MemberMatch[] = []
 
     teamMembers.forEach(member => {
-      const skills = memberSkills[member.id] || {}
+      const memberSkillsMap = memberSkills[member.id] || {}
       const matchingSkills: Array<{ skill: Skill; level: 'C' | 'E' | 'K' }> = []
 
       selectedSkills.forEach(skillId => {
-                  value={searchTerm}
-                  className="pl-10"
-                <MagnifyingGlass size={16} className="absolute lef
-            </div>
-            <div>
-           
-         
-        
+        const memberLevel = memberSkillsMap[skillId]
+        if (memberLevel && (minLevel === 'any' || levelOrder[memberLevel] >= minLevelValue)) {
+          const skill = skills.find(s => s.id === skillId)
+          if (skill) {
+            matchingSkills.push({ skill, level: memberLevel })
+          }
+        }
+      })
 
-                  <SelectItem value="E
-              </Select
+      if (matchingSkills.length > 0) {
+        matches.push({
+          member,
+          matchingSkills,
+          matchCount: matchingSkills.length
+        })
+      }
+    })
 
-              Clear All
-          </div>
-          
-       
-      
+    // Sort by match count (descending) then by name
+    return matches.sort((a, b) => {
+      if (a.matchCount !== b.matchCount) {
+        return b.matchCount - a.matchCount
+      }
+      return a.member.name.localeCompare(b.member.name)
+    })
+  }, [selectedSkills, teamMembers, memberSkills, minLevel, skills])
 
-                    <Badge
-                      variant="secondary"
+  const addSkill = (skillId: string) => {
+    if (!selectedSkills.includes(skillId)) {
+      setSelectedSkills(prev => [...prev, skillId])
+    }
+  }
 
-                      {skill.name}
-                    </Badge>
-                })}
-     
+  const removeSkill = (skillId: string) => {
+    setSelectedSkills(prev => prev.filter(id => id !== skillId))
+  }
 
+  const clearAll = () => {
+    setSelectedSkills([])
+    setSearchTerm('')
+    setMinLevel('any')
+  }
 
-              <h3 className="text-sm font-me
-                {filteredSkills.map(skill => (
-   
+  const getLevelColor = (level: 'C' | 'E' | 'K') => {
+    switch (level) {
+      case 'E': return 'bg-green-600'
+      case 'C': return 'bg-blue-600'
+      case 'K': return 'bg-orange-600'
+      default: return 'bg-gray-600'
+    }
+  }
 
-                    onClic
-                    <div 
-                     
-                      
-   
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-6xl h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Find Team Members by Skills</DialogTitle>
+        </DialogHeader>
 
-                ))}
-                  <d
-                  </div>
-              </div>
-
-            <div className="space-y
-     
-   
-
-          
-                    >
-                        <div className="flex justify-between items-start
-                      
-                            <div className="text-xs text-mu
-                          <div className=
-                            <span>{matc
-                        
-                       
-
-                            >
-                            </Badge>
-                        </div>
-                    </Card>
-                })}
-                  <div className="text-c
-                  </di
-                {selectedSkills.length === 0 && (
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-                <MagnifyingGlass size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              </div>
+        <div className="space-y-4 flex-1 overflow-hidden">
+          {/* Search and Filters */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Input
+                placeholder="Search skills by name, code, or category..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+              <MagnifyingGlass size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             </div>
 
             <div>
@@ -254,32 +254,14 @@ export function SkillSearchDialog({
                 )}
                 {selectedSkills.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    Select skills to find matching team members
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
