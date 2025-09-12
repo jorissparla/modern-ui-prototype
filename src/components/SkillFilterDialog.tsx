@@ -1,19 +1,19 @@
 import { useState, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem,
-import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { MagnifyingGlass, X, User } from '@phosphor-icons/react'
-  teams: Team[]
-  onMemberSelect: (member: TeamMember) => vo
+import { TeamMember, Team } from '../App'
+import { Skill } from './SkillsMatrixDialog'
 
-  open,
-  skills,
-  teams,
-  onMemberSelect
-  const [searchTerm, setSea
+interface SkillFilterDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  skills: Skill[]
+  teamMembers: TeamMember[]
   teams: Team[]
   memberSkills: Record<string, Record<string, 'C' | 'E' | 'K'>>
   onMemberSelect: (member: TeamMember) => void
@@ -34,19 +34,20 @@ export function SkillFilterDialog({
   const [sortBy, setSortBy] = useState<'name' | 'matches' | 'team'>('matches')
 
   // Filter available skills by search term
-            return skill && level ? { sk
+  const filteredSkills = useMemo(() => {
     return skills.filter(skill =>
       skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       skill.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       skill.category.toLowerCase().includes(searchTerm.toLowerCase())
     )
-      }
+  }, [skills, searchTerm])
 
   // Filter and sort team members based on selected skills and criteria
   const filteredMembers = useMemo(() => {
     let members = teamMembers.map(member => {
       const skills = memberSkills[member.id] || {}
       let relevantSkills: Array<{ skill: Skill; level: 'C' | 'E' | 'K' }> = []
+      
       if (selectedSkills.length > 0) {
         relevantSkills = selectedSkills
           .map(skillId => {
@@ -58,73 +59,63 @@ export function SkillFilterDialog({
       }
 
       return {
-      return 0
+        ...member,
         relevantSkills,
-    return members
+        matchingSkillsCount: relevantSkills.filter(({ level }) => {
+          if (minLevel === 'any') return true
+          if (minLevel === 'E') return level === 'E'
+          if (minLevel === 'C') return level === 'C' || level === 'E'
+          return true // 'K' accepts all levels
+        }).length
       }
-  retu
+    })
 
-          <DialogTitle className="f
-            Find Team Members by Ski
-        </DialogHeader>
-        <div className="flex flex-col gap-4 over
-          <div className="flex gap-4 items-end">
-              <label className="text-sm 
-                <Input
-                  value={searchTerm}
-                  className="pl-10"
-          
-        
-     
+    // Filter by minimum level requirement
+    if (selectedSkills.length > 0) {
+      members = members.filter(member => member.matchingSkillsCount > 0)
+    }
 
-                  <
-                <SelectConte
-                  <SelectItem val
-                  <SelectItem value="E">Expert</SelectItem>
-              </Select>
+    // Sort members
+    members.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.name.localeCompare(b.name)
+        case 'team':
+          const teamA = teams.find(t => t.id === a.teamId)?.name || ''
+          const teamB = teams.find(t => t.id === b.teamId)?.name || ''
+          return teamA.localeCompare(teamB)
+        case 'matches':
+        default:
+          return b.matchingSkillsCount - a.matchingSkillsCount
+      }
+    })
 
-              <label className="text-
-                <SelectTrigger className="w-36">
-                </SelectTrigger>
-                  <SelectItem value="matc
-       
-              
+    return members
+  }, [teamMembers, memberSkills, selectedSkills, minLevel, sortBy, teams, skills])
 
+  const addSkill = (skillId: string) => {
+    if (!selectedSkills.includes(skillId)) {
+      setSelectedSkills(prev => [...prev, skillId])
+    }
+  }
 
-          </div>
-          {/* Selected Skills */}
+  const removeSkill = (skillId: string) => {
+    setSelectedSkills(prev => prev.filter(id => id !== skillId))
+  }
 
-              <div className="flex flex-w
-                  const skill = skills.find(
-                    <Badge
-     
-   
+  const clearFilters = () => {
+    setSelectedSkills([])
+    setSearchTerm('')
+    setMinLevel('any')
+  }
 
-                        size="sm"
-                        onClick={() => removeSkill(skillId)}
-   
-
-                })}
-            </div>
-
-            {/* Avail
-   
-
-                    key={skill.id}
-                    
-                    onClick={() => ad
-                    <div className="
-                        <div classN
-     
-   
-
-                ))}
-                  <d
-                  </div>
-              </div>
-
-     
-   
+  const getLevelColor = (level: 'C' | 'E' | 'K') => {
+    switch (level) {
+      case 'E': return 'bg-green-500'
+      case 'C': return 'bg-blue-500'
+      case 'K': return 'bg-gray-500'
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -198,7 +189,7 @@ export function SkillFilterDialog({
                       key={skillId}
                       variant="secondary"
                       className="gap-1"
-
+                    >
                       {skill.name}
                       <Button
                         variant="ghost"
@@ -276,29 +267,29 @@ export function SkillFilterDialog({
                         {member.relevantSkills.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {member.relevantSkills.map(({ skill, level }) => (
-
+                              <Badge
                                 key={skill.id}
                                 className={`text-xs ${getLevelColor(level)} text-white`}
                               >
                                 {skill.code} ({level})
                               </Badge>
-
+                            ))}
                           </div>
-
+                        )}
                       </div>
                     </Card>
                   )
-
+                })}
                 {filteredMembers.length === 0 && (
                   <div className="text-center text-muted-foreground py-8">
                     {selectedSkills.length > 0 
                       ? 'No team members found with the selected skills'
                       : 'Select skills to find matching team members'
-
+                    }
                   </div>
-
+                )}
               </div>
-
+            </div>
           </div>
 
           {/* Legend */}
@@ -308,19 +299,19 @@ export function SkillFilterDialog({
               <div className="flex items-center gap-1">
                 <Badge className="bg-gray-500 text-white text-xs">K</Badge>
                 <span>Knowledge</span>
-
+              </div>
               <div className="flex items-center gap-1">
-
+                <Badge className="bg-blue-500 text-white text-xs">C</Badge>
                 <span>Competent</span>
-
+              </div>
               <div className="flex items-center gap-1">
                 <Badge className="bg-green-500 text-white text-xs">E</Badge>
                 <span>Expert</span>
-
+              </div>
             </div>
-
+          </div>
         </div>
-
+      </DialogContent>
     </Dialog>
-
+  )
 }
