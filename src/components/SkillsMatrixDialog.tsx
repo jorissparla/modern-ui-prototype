@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { X } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { TeamMember } from '../App'
 
 export interface Skill {
@@ -56,64 +56,93 @@ export function SkillsMatrixDialog({
     onUpdateMemberSkills(member.id, updatedSkills)
   }
 
-  const getLevelBadge = (level: 'C' | 'E' | 'K' | undefined) => {
-    switch (level) {
-      case 'C':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">C - Can work on Cases</Badge>
-      case 'E':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">E - Expert</Badge>
-      case 'K':
-        return <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">K - in Training/Knowledge Building</Badge>
-      default:
-        return null
-    }
+  const getLevelButton = (level: 'C' | 'E' | 'K' | undefined, skillId: string) => {
+    const buttons = [
+      { level: 'C' as const, label: 'C', className: 'bg-blue-500 hover:bg-blue-600 text-white' },
+      { level: 'E' as const, label: 'E', className: 'bg-emerald-500 hover:bg-emerald-600 text-white' },
+      { level: 'K' as const, label: 'K', className: 'bg-orange-500 hover:bg-orange-600 text-white' }
+    ]
+
+    return (
+      <div className="flex gap-1">
+        {buttons.map((btn) => (
+          <Button
+            key={btn.level}
+            variant={level === btn.level ? 'default' : 'outline'}
+            size="sm"
+            className={`w-7 h-7 p-0 text-xs font-medium transition-all ${
+              level === btn.level 
+                ? btn.className 
+                : 'text-muted-foreground hover:text-foreground border-border hover:border-muted-foreground'
+            }`}
+            onClick={() => toggleSkillLevel(skillId, level === btn.level ? undefined : btn.level)}
+          >
+            {btn.label}
+          </Button>
+        ))}
+      </div>
+    )
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Knowledge Matrix for {member.name}</span>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm">
-                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">C - Can work on Cases</Badge>
-                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">E - Expert</Badge>
-                <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-300">K - in Training/Knowledge Building</Badge>
-              </div>
-            </div>
+      <DialogContent className="max-w-5xl h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-4">
+          <DialogTitle className="text-xl">
+            Knowledge Matrix for <span className="text-primary">{member.name}</span>
           </DialogTitle>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground mt-2">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center text-white text-xs font-medium">C</div>
+              <span>Can work on Cases</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded bg-emerald-500 flex items-center justify-center text-white text-xs font-medium">E</div>
+              <span>Expert</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded bg-orange-500 flex items-center justify-center text-white text-xs font-medium">K</div>
+              <span>In Training/Knowledge</span>
+            </div>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-            <div key={category} className="space-y-3">
-              <h3 className="font-semibold text-lg border-b pb-2">{category}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {categorySkills.map((skill) => {
-                  const currentLevel = memberSkills[skill.id]
-                  return (
-                    <div
-                      key={skill.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                      onClick={() => toggleSkillLevel(skill.id, currentLevel)}
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm">{skill.name}</span>
-                          <Badge variant="secondary" className="text-xs">{skill.code}</Badge>
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-5">
+            {Object.entries(groupedSkills).map(([category, categorySkills]) => (
+              <div key={category} className="space-y-2.5">
+                <h3 className="font-semibold text-base text-foreground border-b border-border pb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+                  {category}
+                </h3>
+                <div className="grid gap-1.5">
+                  {categorySkills.map((skill) => {
+                    const currentLevel = memberSkills[skill.id]
+                    return (
+                      <div
+                        key={skill.id}
+                        className="flex items-center justify-between py-2.5 px-3 rounded-md border border-border/50 hover:border-border hover:bg-muted/20 transition-all duration-150"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm text-foreground truncate">{skill.name}</span>
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 shrink-0 font-mono">
+                                {skill.code}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="ml-3 shrink-0">
+                          {getLevelButton(currentLevel, skill.id)}
                         </div>
                       </div>
-                      <div className="ml-3">
-                        {getLevelBadge(currentLevel)}
-                      </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )
