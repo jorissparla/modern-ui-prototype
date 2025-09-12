@@ -120,7 +120,7 @@ export function SkillsMatrixDialog({
                     return (
                       <div
                         key={skill.id}
-                        className="flex items-center justify-between py-2.5 px-3 rounded-md border border-border/50 hover:border-border hover:bg-muted/20 transition-all duration-150"
+                        className="flex items-center justify-between py-2 px-3 rounded-lg border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
                       >
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                           <div className="flex-1 min-w-0">
@@ -132,7 +132,7 @@ export function SkillsMatrixDialog({
                             </div>
                           </div>
                         </div>
-                        <div className="ml-3 shrink-0">
+                        <div className="ml-4 shrink-0">
                           {getLevelButton(currentLevel, skill.id)}
                         </div>
                       </div>
