@@ -92,7 +92,7 @@ export function SkillsMatrixDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[1400px] h-[85vh] flex flex-col">
+      <DialogContent className="max-w-[98vw] w-[1800px] h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-xl">
             Knowledge Matrix for <span className="text-primary">{member.name}</span>
