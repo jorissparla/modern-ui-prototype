@@ -84,9 +84,15 @@ export function SkillsMatrixDialog({
     )
   }
 
+  // Split categories into two columns for better layout
+  const categories = Object.entries(groupedSkills)
+  const midPoint = Math.ceil(categories.length / 2)
+  const leftColumnCategories = categories.slice(0, midPoint)
+  const rightColumnCategories = categories.slice(midPoint)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl h-[85vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] w-[1200px] h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-xl">
             Knowledge Matrix for <span className="text-primary">{member.name}</span>
@@ -108,39 +114,78 @@ export function SkillsMatrixDialog({
         </DialogHeader>
 
         <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-5">
-            {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-              <div key={category} className="space-y-2.5">
-                <h3 className="font-semibold text-base text-foreground border-b border-border pb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
-                  {category}
-                </h3>
-                <div className="grid gap-1.5">
-                  {categorySkills.map((skill) => {
-                    const currentLevel = memberSkills[skill.id]
-                    return (
-                      <div
-                        key={skill.id}
-                        className="flex items-center justify-between py-2 px-3 rounded-lg border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm text-foreground truncate">{skill.name}</span>
-                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 shrink-0 font-mono">
-                                {skill.code}
-                              </Badge>
+          <div className="grid grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-5">
+              {leftColumnCategories.map(([category, categorySkills]) => (
+                <div key={category} className="space-y-2.5">
+                  <h3 className="font-semibold text-base text-foreground border-b border-border pb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+                    {category}
+                  </h3>
+                  <div className="grid gap-1.5">
+                    {categorySkills.map((skill) => {
+                      const currentLevel = memberSkills[skill.id]
+                      return (
+                        <div
+                          key={skill.id}
+                          className="flex items-center justify-between py-2 px-3 rounded-lg border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm text-foreground truncate">{skill.name}</span>
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5 shrink-0 font-mono">
+                                  {skill.code}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
+                          <div className="ml-4 shrink-0">
+                            {getLevelButton(currentLevel, skill.id)}
+                          </div>
                         </div>
-                        <div className="ml-4 shrink-0">
-                          {getLevelButton(currentLevel, skill.id)}
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-5">
+              {rightColumnCategories.map(([category, categorySkills]) => (
+                <div key={category} className="space-y-2.5">
+                  <h3 className="font-semibold text-base text-foreground border-b border-border pb-2 sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+                    {category}
+                  </h3>
+                  <div className="grid gap-1.5">
+                    {categorySkills.map((skill) => {
+                      const currentLevel = memberSkills[skill.id]
+                      return (
+                        <div
+                          key={skill.id}
+                          className="flex items-center justify-between py-2 px-3 rounded-lg border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm text-foreground truncate">{skill.name}</span>
+                                <Badge variant="secondary" className="text-xs px-1.5 py-0.5 shrink-0 font-mono">
+                                  {skill.code}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="ml-4 shrink-0">
+                            {getLevelButton(currentLevel, skill.id)}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>
