@@ -92,7 +92,7 @@ export function SkillsMatrixDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] w-[1200px] h-[85vh] flex flex-col">
+      <DialogContent className="max-w-[95vw] w-[1400px] h-[85vh] flex flex-col">
         <DialogHeader className="flex-shrink-0 pb-4">
           <DialogTitle className="text-xl">
             Knowledge Matrix for <span className="text-primary">{member.name}</span>
@@ -114,7 +114,7 @@ export function SkillsMatrixDialog({
         </DialogHeader>
 
         <ScrollArea className="flex-1 pr-4">
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-12">
             {/* Left Column */}
             <div className="space-y-5">
               {leftColumnCategories.map(([category, categorySkills]) => (
